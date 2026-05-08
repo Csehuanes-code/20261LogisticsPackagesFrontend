@@ -1,10 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import {
   Package,
   ChevronRight,
-  CircleUser,
-  MapPin,
   Box,
   Scale,
   Ruler,
@@ -13,20 +11,26 @@ import {
   Info,
   ShieldAlert,
   Wine,
-  Boxes,
+  PackageSearch,
+  LoaderCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AppLayout } from "@/components/AppLayout";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/pesaje")({
   component: PesajePage,
   head: () => ({
     meta: [
-      { title: "Pesaje y Dimensiones · PROSHITS" },
+      { title: "Pesaje y Dimensiones · HERMES EXPRESS" },
       {
         name: "description",
         content:
-          "Pesaje, dimensiones y desglose de precios del paquete — PROSHITS.",
+          "Pesaje, dimensiones y desglose de precios del paquete — HERMES EXPRESS.",
       },
     ],
   }),
@@ -39,46 +43,39 @@ const merchTypes = [
 ] as const;
 
 function PesajePage() {
-  const [merch, setMerch] = useState<(typeof merchTypes)[number]["id"]>(
-    "estandar",
-  );
+  const navigate = useNavigate();
+  const [merch, setMerch] = useState<(typeof merchTypes)[number]["id"]>("estandar");
+  const [irregular, setIrregular] = useState(false);
+  const [pesoReal, setPesoReal] = useState(52.4);
+  const [volumen, setVolumen] = useState(0.084);
+  const [showAtypicalDensityAlert, setShowAtypicalDensityAlert] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const pesoVolumetrico = volumen * 250;
+  const pesoFacturable = Math.max(pesoReal, pesoVolumetrico);
+
+  useEffect(() => {
+    const diff = Math.abs(pesoReal - pesoVolumetrico);
+    const percentageDiff = (diff / Math.max(pesoReal, pesoVolumetrico)) * 100;
+    setShowAtypicalDensityAlert(percentageDiff > 30);
+  }, [pesoReal, pesoVolumetrico]);
+
+  const handleConfirm = () => {
+    setIsSubmitting(true);
+    toast.loading("Solicitando ruta al Módulo de Gestión de Rutas...");
+
+    setTimeout(() => {
+      setIsSubmitting(false);
+      toast.dismiss();
+      toast.success("¡Ruta solicitada con éxito!", {
+        description: "ID de Ruta: R-451-XYZ",
+      });
+      navigate({ to: "/gestion" });
+    }, 2500);
+  };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Top bar */}
-      <header className="border-b border-border bg-card">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-glow shadow-[var(--shadow-elevated)]">
-              <Package className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <div className="leading-tight">
-              <p className="text-base font-bold tracking-tight text-foreground">
-                PROSHITS
-              </p>
-              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                Logística Profesional
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="hidden text-right sm:block">
-              <p className="text-sm font-semibold text-foreground">
-                Operador 042
-              </p>
-              <p className="flex items-center justify-end gap-1.5 text-xs text-muted-foreground">
-                <MapPin className="h-3 w-3 text-accent" />
-                Sede Central · ID 001
-              </p>
-            </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
-              <CircleUser className="h-5 w-5 text-primary" />
-            </div>
-          </div>
-        </div>
-      </header>
-
+    <AppLayout icon={<Package className="h-5 w-5 text-primary-foreground" />} title="HERMES EXPRESS">
       <main className="mx-auto max-w-7xl px-6 py-8">
         {/* Breadcrumb + title */}
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
@@ -147,14 +144,32 @@ function PesajePage() {
 
             {/* Especificaciones técnicas */}
             <section className="rounded-xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
-              <div className="mb-5 flex items-center gap-2.5">
-                <span className="flex h-7 w-7 items-center justify-center rounded-md bg-accent/15 text-accent">
-                  <Ruler className="h-4 w-4" />
-                </span>
-                <h2 className="text-sm font-bold text-foreground">
-                  Especificaciones Técnicas
-                </h2>
+              <div className="mb-5 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-md bg-accent/15 text-accent">
+                    <Ruler className="h-4 w-4" />
+                  </span>
+                  <h2 className="text-sm font-bold text-foreground">
+                    Especificaciones Técnicas
+                  </h2>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Label htmlFor="irregular-switch" className="text-xs font-bold text-muted-foreground">Forma Irregular</Label>
+                  <Switch id="irregular-switch" checked={irregular} onCheckedChange={setIrregular} />
+                </div>
               </div>
+
+              {irregular && (
+                 <Alert variant="default" className="mb-4 flex items-center gap-3">
+                  <PackageSearch className="h-5 w-5 text-primary" />
+                  <div>
+                    <AlertTitle className="font-bold">Modo de Medición Irregular</AlertTitle>
+                    <AlertDescription className="text-xs">
+                      Mida el paquete usando las dimensiones de la caja contenedora mínima imaginaria que lo envuelve.
+                    </AlertDescription>
+                  </div>
+                </Alert>
+              )}
 
               <div className="grid gap-4 sm:grid-cols-3">
                 {["Largo", "Ancho", "Alto"].map((d) => (
@@ -162,7 +177,7 @@ function PesajePage() {
                     <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                       {d} (cm)
                     </label>
-                    <Input placeholder="00" />
+                    <Input placeholder="00" type="number" onChange={(e) => setVolumen(((e.target.valueAsNumber || 0) * 80 * 60) / 1000000)} />
                   </div>
                 ))}
               </div>
@@ -172,7 +187,7 @@ function PesajePage() {
                   Peso Real (kg)
                 </label>
                 <div className="relative">
-                  <Input placeholder="0.00" className="pr-12" />
+                  <Input placeholder="0.00" type="number" className="pr-12" value={pesoReal} onChange={(e) => setPesoReal(e.target.valueAsNumber)} />
                   <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
                     kg
                   </span>
@@ -225,12 +240,21 @@ function PesajePage() {
               <p className="mb-4 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 Métricas de Cálculo
               </p>
+              {showAtypicalDensityAlert && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Alerta: Densidad Atípica</AlertTitle>
+                  <AlertDescription>
+                    La diferencia entre el peso real y el volumétrico supera el 30%. Verifique las medidas y el peso antes de confirmar.
+                  </AlertDescription>
+                </Alert>
+              )}
               <div className="grid gap-3 sm:grid-cols-3">
-                <Metric label="Volumen Total" value="0.084" unit="m³" />
-                <Metric label="Peso Volumétrico" value="16.8" unit="kg" />
+                <Metric label="Volumen Total" value={volumen.toFixed(3)} unit="m³" />
+                <Metric label="Peso Volumétrico" value={pesoVolumetrico.toFixed(1)} unit="kg" />
                 <Metric
                   label="Peso Facturable"
-                  value="52.4"
+                  value={pesoFacturable.toFixed(1)}
                   unit="kg"
                   highlight
                 />
@@ -238,7 +262,7 @@ function PesajePage() {
               <p className="mt-4 flex items-start gap-2 text-[11px] italic text-muted-foreground">
                 <Info className="mt-0.5 h-3 w-3 shrink-0" />
                 Se toma el valor mayor entre el peso real y el peso volumétrico
-                para la facturación. Densidad aplicada: 200 kg/m³.
+                para la facturación. Densidad aplicada: 250 kg/m³.
               </p>
             </section>
           </div>
@@ -257,7 +281,7 @@ function PesajePage() {
 
               <div className="space-y-3 text-sm">
                 <Row label="Tarifa Base (Envío Nacional)" value="$120.00" />
-                <Row label="Cargo por Peso (52.4 kg)" value="$450.00" />
+                <Row label={`Cargo por Peso (${pesoFacturable.toFixed(1)} kg)`} value="$450.00" />
                 <Row label="Cargo por Distancia (840 km)" value="$215.00" />
                 <Row
                   label="Recargo 'Carga Especial'"
@@ -288,9 +312,15 @@ function PesajePage() {
               <Button
                 size="lg"
                 className="h-14 w-full bg-gradient-to-r from-primary to-primary-glow text-base font-bold shadow-[var(--shadow-elevated)] transition-transform hover:scale-[1.01] hover:shadow-lg"
+                onClick={handleConfirm}
+                disabled={isSubmitting}
               >
-                Confirmar Registro y Solicitar Ruta
-                <ArrowRight className="ml-1 h-5 w-5" />
+                {isSubmitting ? (
+                  <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <ArrowRight className="mr-2 h-5 w-5" />
+                )}
+                {isSubmitting ? "Solicitando Ruta..." : "Confirmar y Solicitar Ruta"}
               </Button>
 
               <p className="text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -301,18 +331,7 @@ function PesajePage() {
           </div>
         </div>
       </main>
-
-      <footer className="mt-8 border-t border-border bg-card">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-4 text-xs text-muted-foreground">
-          <p>© 2024 PROSHITS S.A. Todos los derechos reservados.</p>
-          <div className="flex items-center gap-5">
-            <a href="#" className="hover:text-foreground">
-              Soporte Técnico
-            </a>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </AppLayout>
   );
 }
 

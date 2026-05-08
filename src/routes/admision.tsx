@@ -7,9 +7,10 @@ import {
   Truck,
   Phone,
   ChevronRight,
-  CircleUser,
   CheckCircle2,
   Building2,
+  Info,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,16 +22,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { AppLayout } from "@/components/AppLayout";
+import { Switch } from "@/components/ui/switch";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export const Route = createFileRoute("/admision")({
   component: AdmissionPage,
   head: () => ({
     meta: [
-      { title: "Admisión de Paquete · PROSHITS" },
+      { title: "Admisión de Paquete · HERMES EXPRESS" },
       {
         name: "description",
         content:
-          "Registro y admisión de paquetes — sistema logístico profesional PROSHITS para envíos nacionales.",
+          "Registro y admisión de paquetes — sistema logístico profesional HERMES EXPRESS para envíos nacionales.",
       },
     ],
   }),
@@ -40,52 +44,10 @@ function AdmissionPage() {
   const [senderDocType, setSenderDocType] = useState("dni");
   const [receiverDocType, setReceiverDocType] = useState("dni");
   const [paymentMethod, setPaymentMethod] = useState("efectivo");
+  const [gpsError, setGpsError] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Top bar */}
-      <header className="border-b border-border bg-card">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-glow shadow-[var(--shadow-elevated)]">
-              <Package className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <div className="leading-tight">
-              <p className="text-base font-bold tracking-tight text-foreground">
-                PROSHITS
-              </p>
-              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                Logística Profesional
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-6">
-            <div className="hidden text-right sm:block">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Sede Actual
-              </p>
-              <p className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-                <MapPin className="h-3.5 w-3.5 text-accent" />
-                Sede Central · ID 001
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="hidden text-right sm:block">
-                <p className="text-sm font-semibold text-foreground">
-                  Operador 042
-                </p>
-                <p className="text-xs text-muted-foreground">Turno Mañana</p>
-              </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
-                <CircleUser className="h-5 w-5 text-primary" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main */}
+    <AppLayout icon={<Package className="h-5 w-5 text-primary-foreground" />} title="HERMES EXPRESS">
       <main className="mx-auto max-w-7xl px-6 py-8">
         {/* Breadcrumb + title */}
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
@@ -161,10 +123,7 @@ function AdmissionPage() {
             >
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Tipo de Documento">
-                  <Select
-                    value={receiverDocType}
-                    onValueChange={setReceiverDocType}
-                  >
+                  <Select value={receiverDocType} onValueChange={setReceiverDocType}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -197,10 +156,7 @@ function AdmissionPage() {
               <Field label="Dirección de Entrega">
                 <div className="relative">
                   <Building2 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    className="pl-9"
-                    placeholder="Av. Principal 123, Distrito, Ciudad"
-                  />
+                  <Input className="pl-9" placeholder="Av. Principal 123, Distrito, Ciudad" />
                 </div>
               </Field>
             </FormCard>
@@ -215,41 +171,63 @@ function AdmissionPage() {
                   <span className="flex h-7 w-7 items-center justify-center rounded-md bg-accent/15 text-accent">
                     <MapPin className="h-4 w-4" />
                   </span>
-                  <h2 className="text-sm font-bold text-foreground">
-                    Cobertura Geográfica
-                  </h2>
+                  <h2 className="text-sm font-bold text-foreground">Cobertura Geográfica</h2>
                 </div>
-                <span className="rounded-full bg-success/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-success">
-                  Dentro de rango
+                <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${gpsError ? 'bg-destructive/15 text-destructive' : 'bg-success/15 text-success'}`}>
+                  {gpsError ? 'FALLO DE GPS' : 'Dentro de rango'}
                 </span>
               </div>
 
-              <div className="relative h-56 overflow-hidden bg-[var(--gradient-map)]">
-                {/* faux map grid */}
-                <div
-                  className="absolute inset-0 opacity-40"
-                  style={{
-                    backgroundImage:
-                      "linear-gradient(to right, oklch(1 0 0 / 0.4) 1px, transparent 1px), linear-gradient(to bottom, oklch(1 0 0 / 0.4) 1px, transparent 1px)",
-                    backgroundSize: "32px 32px",
-                  }}
-                />
-                {/* faux roads */}
-                <div className="absolute left-0 right-0 top-1/3 h-1 -rotate-6 bg-card/60" />
-                <div className="absolute bottom-1/3 left-0 right-0 h-1 rotate-3 bg-card/60" />
-
-                <div className="relative flex h-full flex-col items-center justify-center gap-3">
-                  <div className="relative">
-                    <span className="absolute inset-0 animate-ping rounded-full bg-accent/40" />
-                    <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-accent to-warning shadow-[var(--shadow-elevated)]">
-                      <MapPin className="h-6 w-6 text-accent-foreground" />
-                    </div>
+              {gpsError ? (
+                <div className="p-5">
+                  <Alert variant="destructive" className="mb-4">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Fallo en API de Geolocalización</AlertTitle>
+                    <AlertDescription>
+                      El servicio de Google Maps no respondió. Ingrese las coordenadas manualmente.
+                    </AlertDescription>
+                  </Alert>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Field label="Latitud">
+                      <Input placeholder="Ej: -12.046374" />
+                    </Field>
+                    <Field label="Longitud">
+                      <Input placeholder="Ej: -77.042793" />
+                    </Field>
                   </div>
-                  <p className="rounded-full bg-card/95 px-3 py-1 text-xs font-semibold text-foreground shadow-sm">
-                    <CheckCircle2 className="mr-1 inline h-3.5 w-3.5 text-success" />
-                    Destino validado correctamente
-                  </p>
                 </div>
+              ) : (
+                <div className="relative h-56 overflow-hidden bg-[var(--gradient-map)]">
+                  {/* faux map grid */}
+                  <div
+                    className="absolute inset-0 opacity-40"
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(to right, oklch(1 0 0 / 0.4) 1px, transparent 1px), linear-gradient(to bottom, oklch(1 0 0 / 0.4) 1px, transparent 1px)",
+                      backgroundSize: "32px 32px",
+                    }}
+                  />
+                  {/* faux roads */}
+                  <div className="absolute left-0 right-0 top-1/3 h-1 -rotate-6 bg-card/60" />
+                  <div className="absolute bottom-1/3 left-0 right-0 h-1 rotate-3 bg-card/60" />
+
+                  <div className="relative flex h-full flex-col items-center justify-center gap-3">
+                    <div className="relative">
+                      <span className="absolute inset-0 animate-ping rounded-full bg-accent/40" />
+                      <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-accent to-warning shadow-[var(--shadow-elevated)]">
+                        <MapPin className="h-6 w-6 text-accent-foreground" />
+                      </div>
+                    </div>
+                    <p className="rounded-full bg-card/95 px-3 py-1 text-xs font-semibold text-foreground shadow-sm">
+                      <CheckCircle2 className="mr-1 inline h-3.5 w-3.5 text-success" />
+                      Destino validado correctamente
+                    </p>
+                  </div>
+                </div>
+              )}
+               <div className="flex items-center justify-end gap-2 border-t border-border bg-card/50 px-5 py-3">
+                <Label htmlFor="gps-error-switch" className="text-xs font-bold text-muted-foreground">Simular Fallo de GPS</Label>
+                <Switch id="gps-error-switch" checked={gpsError} onCheckedChange={setGpsError} />
               </div>
             </div>
 
@@ -281,13 +259,9 @@ function AdmissionPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="efectivo">
-                      Efectivo (Sede Central)
-                    </SelectItem>
+                    <SelectItem value="efectivo">Efectivo (Sede Central)</SelectItem>
                     <SelectItem value="tarjeta">Tarjeta de Crédito</SelectItem>
-                    <SelectItem value="transferencia">
-                      Transferencia Bancaria
-                    </SelectItem>
+                    <SelectItem value="transferencia">Transferencia Bancaria</SelectItem>
                     <SelectItem value="yape">Yape / Plin</SelectItem>
                   </SelectContent>
                 </Select>
@@ -309,23 +283,16 @@ function AdmissionPage() {
             </div>
           </div>
         </div>
+        
+        <Alert className="mt-8">
+          <Info className="h-4 w-4" />
+          <AlertTitle>Recordatorio para el Operador</AlertTitle>
+          <AlertDescription>
+            Al confirmar el registro y asignarse la ruta, informe al cliente que la fecha estimada máxima de entrega es de **7 días hábiles**.
+          </AlertDescription>
+        </Alert>
       </main>
-
-      {/* Footer */}
-      <footer className="mt-8 border-t border-border bg-card">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-4 text-xs text-muted-foreground">
-          <p>© 2024 PROSHITS S.A. Todos los derechos reservados.</p>
-          <div className="flex items-center gap-5">
-            <a href="#" className="hover:text-foreground">
-              Soporte Técnico
-            </a>
-            <a href="#" className="hover:text-foreground">
-              Términos y Condiciones
-            </a>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </AppLayout>
   );
 }
 
@@ -343,9 +310,7 @@ function FormCard({
   return (
     <section className="rounded-xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
       <div className="mb-5 flex items-center gap-2.5">
-        <span
-          className={`flex h-7 w-7 items-center justify-center rounded-md ${iconBg}`}
-        >
+        <span className={`flex h-7 w-7 items-center justify-center rounded-md ${iconBg}`}>
           {icon}
         </span>
         <h2 className="text-sm font-bold text-foreground">{title}</h2>

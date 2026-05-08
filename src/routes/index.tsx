@@ -4,19 +4,18 @@ import {
   Warehouse,
   AlertTriangle,
   ArrowRight,
-  CircleUser,
-  MapPin,
 } from "lucide-react";
+import { AppLayout } from "@/components/AppLayout";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
   head: () => ({
     meta: [
-      { title: "Inicio · PROSHITS" },
+      { title: "Inicio · HERMES EXPRESS" },
       {
         name: "description",
         content:
-          "Panel principal de PROSHITS — admisión, gestión de ingreso y control de novedades logísticas.",
+          "Panel principal de HERMES EXPRESS — admisión, gestión de ingreso y control de novedades logísticas.",
       },
     ],
   }),
@@ -24,41 +23,7 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   return (
-    <div className="min-h-screen bg-background">
-      {/* Top bar */}
-      <header className="border-b border-border bg-card">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-glow shadow-[var(--shadow-elevated)]">
-              <Package className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <div className="leading-tight">
-              <p className="text-base font-bold tracking-tight text-foreground">
-                PROSHITS
-              </p>
-              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                Logística Profesional
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-6">
-            <div className="hidden text-right sm:block">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Sede Actual
-              </p>
-              <p className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-                <MapPin className="h-3.5 w-3.5 text-accent" />
-                Sede Central · ID 001
-              </p>
-            </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
-              <CircleUser className="h-5 w-5 text-primary" />
-            </div>
-          </div>
-        </div>
-      </header>
-
+    <AppLayout icon={<Package className="h-5 w-5 text-primary-foreground" />} title="HERMES EXPRESS">
       <main className="mx-auto max-w-7xl px-6 py-16">
         <div className="mb-12 text-center">
           <span className="inline-block rounded-full border border-border bg-card px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
@@ -96,18 +61,7 @@ function HomePage() {
           />
         </div>
       </main>
-
-      <footer className="border-t border-border bg-card">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-4 text-xs text-muted-foreground">
-          <p>© 2024 PROSHITS S.A. Todos los derechos reservados.</p>
-          <div className="flex items-center gap-5">
-            <a href="#" className="hover:text-foreground">
-              Soporte Técnico
-            </a>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </AppLayout>
   );
 }
 
@@ -118,7 +72,7 @@ function ModuleCard({
   description,
   iconBg,
 }: {
-  to: "/admision" | "/gestion" | "/novedades";
+  to: "/admision" | "/gestion" | "/novedades" | "/pesaje" | "/discrepancia";
   icon: React.ReactNode;
   title: string;
   description: string;

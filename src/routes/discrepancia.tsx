@@ -3,7 +3,6 @@ import { useState } from "react";
 import {
   Package,
   ChevronRight,
-  CircleUser,
   AlertTriangle,
   Box,
   CheckCircle2,
@@ -22,16 +21,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { AppLayout } from "@/components/AppLayout";
 
 export const Route = createFileRoute("/discrepancia")({
   component: DiscrepanciaPage,
   head: () => ({
     meta: [
-      { title: "Reportar Discrepancia Física · PROSHITS" },
+      { title: "Reportar Discrepancia Física · HERMES EXPRESS" },
       {
         name: "description",
         content:
-          "Corrección de discrepancias físicas detectadas en pesaje y dimensiones — PROSHITS.",
+          "Corrección de discrepancias físicas detectadas en pesaje y dimensiones — HERMES EXPRESS.",
       },
     ],
   }),
@@ -41,43 +41,19 @@ function DiscrepanciaPage() {
   const [motivo, setMotivo] = useState("error-pesaje");
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-glow shadow-[var(--shadow-elevated)]">
-              <Package className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <div className="leading-tight">
-              <p className="text-base font-bold tracking-tight text-foreground">
-                PROSHITS
-              </p>
-              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                Logística Profesional
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <span className="hidden items-center gap-1.5 rounded-full bg-success/15 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-success sm:inline-flex">
-              <span className="h-1.5 w-1.5 rounded-full bg-success" />
-              Finanzas API: Online
-            </span>
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
-              <CircleUser className="h-5 w-5 text-primary" />
-            </div>
-          </div>
-        </div>
-      </header>
-
+    <AppLayout 
+      icon={<Package className="h-5 w-5 text-primary-foreground" />}
+      title="HERMES EXPRESS"
+      showFinanzas={true}
+    >
       <main className="mx-auto max-w-7xl px-6 py-8">
         <nav className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
           <Link to="/" className="hover:text-foreground">
             Inicio
           </Link>
           <ChevronRight className="h-3 w-3" />
-          <Link to="/pesaje" className="hover:text-foreground">
-            Pesaje
+          <Link to="/gestion" className="hover:text-foreground">
+            Gestión de Ingreso
           </Link>
           <ChevronRight className="h-3 w-3" />
           <span className="text-primary">Reportar Discrepancia</span>
@@ -304,7 +280,7 @@ function DiscrepanciaPage() {
                 Confirmar Corrección
               </Button>
               <Button asChild variant="outline" className="h-11 w-full">
-                <Link to="/pesaje">
+                <Link to="/gestion">
                   <X className="h-4 w-4" />
                   Cancelar
                 </Link>
@@ -331,13 +307,7 @@ function DiscrepanciaPage() {
           automáticamente.
         </div>
       </main>
-
-      <footer className="mt-8 border-t border-border bg-card">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-4 text-xs text-muted-foreground">
-          <p>© 2024 PROSHITS S.A. Todos los derechos reservados.</p>
-        </div>
-      </footer>
-    </div>
+    </AppLayout>
   );
 }
 

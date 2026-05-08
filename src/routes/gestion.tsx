@@ -1,8 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import {
-  Package,
   ChevronRight,
-  CircleUser,
   Warehouse,
   ScanLine,
   CheckCircle2,
@@ -12,48 +11,56 @@ import {
   ShieldAlert,
   FileText,
   BarChart3,
+  Route as RouteIcon,
+  LoaderCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AppLayout } from "@/components/AppLayout";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/gestion")({
   component: GestionPage,
   head: () => ({
     meta: [
-      { title: "Gestión de Ingreso · PROSHITS" },
+      { title: "Gestión de Ingreso · HERMES EXPRESS" },
       {
         name: "description",
         content:
-          "Asignación de zonas, almacenaje y clasificación de paquetes — PROSHITS.",
+          "Asignación de zonas, almacenaje y clasificación de paquetes — HERMES EXPRESS.",
       },
     ],
   }),
 });
 
 function GestionPage() {
-  return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-glow shadow-[var(--shadow-elevated)]">
-              <Warehouse className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <div className="leading-tight">
-              <p className="text-base font-bold tracking-tight text-foreground">
-                PROSHITS Bodega
-              </p>
-              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                Gestión de Ingreso
-              </p>
-            </div>
-          </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
-            <CircleUser className="h-5 w-5 text-primary" />
-          </div>
-        </div>
-      </header>
+  const navigate = useNavigate();
+  const [zonaSaturada, setZonaSaturada] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
 
+  const handleConfirm = () => {
+    setIsConfirming(true);
+    toast.loading("Confirmando almacenaje y actualizando estado...");
+
+    setTimeout(() => {
+      setIsConfirming(false);
+      toast.dismiss();
+      toast.success("Paquete almacenado con éxito.", {
+        description: "Redirigiendo a la pantalla de clasificación...",
+      });
+      navigate({ to: "/clasificacion" });
+    }, 2000);
+  };
+
+  return (
+    <AppLayout 
+      icon={<Warehouse className="h-5 w-5 text-primary-foreground" />}
+      title="HERMES EXPRESS Bodega"
+      subtitle="Gestión de Ingreso"
+    >
       <main className="mx-auto max-w-7xl px-6 py-8">
         <nav className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
           <Link to="/" className="hover:text-foreground">
@@ -78,10 +85,19 @@ function GestionPage() {
             <ScanLine className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
             <Input
               className="h-14 rounded-xl pl-12 text-base"
-              placeholder="Buscar por UUID del paquete"
+              placeholder="Buscar por UUID del paquete (ej: PRX-9823-UUID)"
+              defaultValue="PRX-9823-UUID"
             />
           </div>
         </section>
+
+        <Alert className="mb-6 bg-primary/5 border-primary/20">
+          <RouteIcon className="h-4 w-4" />
+          <AlertTitle className="font-bold">Ruta Asignada</AlertTitle>
+          <AlertDescription>
+            El paquete con UUID <span className="font-mono font-semibold">PRX-9823-UUID</span> ha sido asignado a la ruta <span className="font-mono font-semibold">R-451-XYZ</span>.
+          </AlertDescription>
+        </Alert>
 
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Asignación zona */}
@@ -95,25 +111,36 @@ function GestionPage() {
                   Panel de Asignación de Zona
                 </h2>
               </div>
-              <span className="rounded-full bg-success/15 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-success">
-                Paquete Identificado
-              </span>
+              <div className="flex items-center space-x-2">
+                <Label htmlFor="saturated-zone-switch" className="text-xs font-bold text-muted-foreground">Simular Zona Saturada</Label>
+                <Switch id="saturated-zone-switch" checked={zonaSaturada} onCheckedChange={setZonaSaturada} />
+              </div>
             </div>
 
-            <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
+            {zonaSaturada && (
+              <Alert variant="warning" className="mb-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Zona Sugerida Saturada</AlertTitle>
+                <AlertDescription>
+                  La zona A-12 ha alcanzado su capacidad. Se sugiere zona de contingencia.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div className={`rounded-xl border p-5 ${zonaSaturada ? 'border-warning/30 bg-warning/5' : 'border-primary/20 bg-primary/5'}`}>
               <div className="flex items-start gap-4">
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-glow text-primary-foreground">
+                <span className={`flex h-10 w-10 items-center justify-center rounded-lg text-primary-foreground ${zonaSaturada ? 'bg-warning' : 'bg-gradient-to-br from-primary to-primary-glow'}`}>
                   <Sparkles className="h-5 w-5" />
                 </span>
                 <div className="flex-1">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                  <p className={`text-[10px] font-bold uppercase tracking-wider ${zonaSaturada ? 'text-warning' : 'text-primary'}`}>
                     Sugerencia Automática
                   </p>
                   <p className="text-lg font-bold text-foreground">
-                    Zona A-12 (Delicada)
+                    {zonaSaturada ? 'Zona C-01 (Contingencia)' : 'Zona A-12 (Delicada)'}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Asignado por: Fragilidad Alta + Dimensiones &lt; 50cm
+                    {zonaSaturada ? 'Asignado por: Desborde de zona A-12' : 'Asignado por: Fragilidad Alta + Dimensiones < 50cm'}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -131,19 +158,21 @@ function GestionPage() {
                 title="Zona Normal"
                 desc="Carga general, sin riesgos específicos."
                 color="text-muted-foreground"
+                disabled={true}
               />
               <ZoneCard
                 icon={<Sparkles className="h-5 w-5" />}
                 title="Zona Delicada"
                 desc="Equipos electrónicos, vidrio, arte."
                 color="text-primary"
-                active
+                active={!zonaSaturada}
               />
               <ZoneCard
                 icon={<ShieldAlert className="h-5 w-5" />}
                 title="Alto Riesgo"
                 desc="Químicos, inflamables o pesados."
                 color="text-destructive"
+                disabled={true}
               />
             </div>
           </section>
@@ -153,9 +182,11 @@ function GestionPage() {
             <Button
               size="lg"
               className="h-12 w-full bg-gradient-to-r from-primary to-primary-glow text-base font-bold shadow-[var(--shadow-elevated)]"
+              onClick={handleConfirm}
+              disabled={isConfirming}
             >
-              <CheckCircle2 className="h-5 w-5" />
-              Confirmar Almacenaje
+              {isConfirming ? <LoaderCircle className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle2 className="h-5 w-5" />}
+              {isConfirming ? 'Confirmando...' : 'Confirmar Almacenaje'}
             </Button>
             <Button asChild variant="outline" className="h-12 w-full">
               <Link to="/discrepancia">
@@ -163,12 +194,11 @@ function GestionPage() {
                 Reportar Discrepancia Física
               </Link>
             </Button>
-            <Button
-              variant="outline"
-              className="h-12 w-full border-destructive/40 text-destructive hover:bg-destructive/5 hover:text-destructive"
-            >
-              <AlertTriangle className="h-4 w-4" />
-              Reportar Novedad (Daño/Extra)
+            <Button asChild variant="outline" className="h-12 w-full border-destructive/40 text-destructive hover:bg-destructive/5 hover:text-destructive">
+              <Link to="/reportar-novedad">
+                <AlertTriangle className="h-4 w-4" />
+                Reportar Novedad (Daño/Extra)
+              </Link>
             </Button>
 
             {/* Capacidad */}
@@ -198,17 +228,7 @@ function GestionPage() {
           </div>
         </div>
       </main>
-
-      <footer className="mt-8 border-t border-border bg-card">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-4 text-xs text-muted-foreground">
-          <p>© 2024 PROSHITS S.A. Todos los derechos reservados.</p>
-          <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-success" />
-            Sistema en línea
-          </div>
-        </div>
-      </footer>
-    </div>
+    </AppLayout>
   );
 }
 
@@ -218,20 +238,20 @@ function ZoneCard({
   desc,
   color,
   active,
+  disabled,
 }: {
   icon: React.ReactNode;
   title: string;
   desc: string;
   color: string;
   active?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <div
-      className={`rounded-lg border p-4 ${
-        active
-          ? "border-primary bg-primary/5 shadow-[var(--shadow-card)]"
-          : "border-border bg-background"
-      }`}
+      className={`rounded-lg border p-4 transition-all ${
+        active ? "border-primary bg-primary/5 shadow-[var(--shadow-card)]" : "border-border bg-background"
+      } ${disabled ? "opacity-50 pointer-events-none" : ""}`}
     >
       <span className={color}>{icon}</span>
       <p className="mt-3 text-sm font-bold text-foreground">{title}</p>

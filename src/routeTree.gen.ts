@@ -9,13 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ReportarNovedadRouteImport } from './routes/reportar-novedad'
 import { Route as PesajeRouteImport } from './routes/pesaje'
 import { Route as NovedadesRouteImport } from './routes/novedades'
 import { Route as GestionRouteImport } from './routes/gestion'
 import { Route as DiscrepanciaRouteImport } from './routes/discrepancia'
+import { Route as ClasificacionRouteImport } from './routes/clasificacion'
 import { Route as AdmisionRouteImport } from './routes/admision'
 import { Route as IndexRouteImport } from './routes/index'
 
+const ReportarNovedadRoute = ReportarNovedadRouteImport.update({
+  id: '/reportar-novedad',
+  path: '/reportar-novedad',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PesajeRoute = PesajeRouteImport.update({
   id: '/pesaje',
   path: '/pesaje',
@@ -36,6 +43,11 @@ const DiscrepanciaRoute = DiscrepanciaRouteImport.update({
   path: '/discrepancia',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClasificacionRoute = ClasificacionRouteImport.update({
+  id: '/clasificacion',
+  path: '/clasificacion',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdmisionRoute = AdmisionRouteImport.update({
   id: '/admision',
   path: '/admision',
@@ -50,66 +62,87 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admision': typeof AdmisionRoute
+  '/clasificacion': typeof ClasificacionRoute
   '/discrepancia': typeof DiscrepanciaRoute
   '/gestion': typeof GestionRoute
   '/novedades': typeof NovedadesRoute
   '/pesaje': typeof PesajeRoute
+  '/reportar-novedad': typeof ReportarNovedadRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admision': typeof AdmisionRoute
+  '/clasificacion': typeof ClasificacionRoute
   '/discrepancia': typeof DiscrepanciaRoute
   '/gestion': typeof GestionRoute
   '/novedades': typeof NovedadesRoute
   '/pesaje': typeof PesajeRoute
+  '/reportar-novedad': typeof ReportarNovedadRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admision': typeof AdmisionRoute
+  '/clasificacion': typeof ClasificacionRoute
   '/discrepancia': typeof DiscrepanciaRoute
   '/gestion': typeof GestionRoute
   '/novedades': typeof NovedadesRoute
   '/pesaje': typeof PesajeRoute
+  '/reportar-novedad': typeof ReportarNovedadRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/admision'
+    | '/clasificacion'
     | '/discrepancia'
     | '/gestion'
     | '/novedades'
     | '/pesaje'
+    | '/reportar-novedad'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admision'
+    | '/clasificacion'
     | '/discrepancia'
     | '/gestion'
     | '/novedades'
     | '/pesaje'
+    | '/reportar-novedad'
   id:
     | '__root__'
     | '/'
     | '/admision'
+    | '/clasificacion'
     | '/discrepancia'
     | '/gestion'
     | '/novedades'
     | '/pesaje'
+    | '/reportar-novedad'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdmisionRoute: typeof AdmisionRoute
+  ClasificacionRoute: typeof ClasificacionRoute
   DiscrepanciaRoute: typeof DiscrepanciaRoute
   GestionRoute: typeof GestionRoute
   NovedadesRoute: typeof NovedadesRoute
   PesajeRoute: typeof PesajeRoute
+  ReportarNovedadRoute: typeof ReportarNovedadRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reportar-novedad': {
+      id: '/reportar-novedad'
+      path: '/reportar-novedad'
+      fullPath: '/reportar-novedad'
+      preLoaderRoute: typeof ReportarNovedadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pesaje': {
       id: '/pesaje'
       path: '/pesaje'
@@ -138,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DiscrepanciaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/clasificacion': {
+      id: '/clasificacion'
+      path: '/clasificacion'
+      fullPath: '/clasificacion'
+      preLoaderRoute: typeof ClasificacionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admision': {
       id: '/admision'
       path: '/admision'
@@ -158,11 +198,22 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdmisionRoute: AdmisionRoute,
+  ClasificacionRoute: ClasificacionRoute,
   DiscrepanciaRoute: DiscrepanciaRoute,
   GestionRoute: GestionRoute,
   NovedadesRoute: NovedadesRoute,
   PesajeRoute: PesajeRoute,
+  ReportarNovedadRoute: ReportarNovedadRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
