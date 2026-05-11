@@ -127,7 +127,7 @@ function PesajePage() {
                     Juan Pérez
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Calle 10, CDMX, MX
+                    Calle 10, Bogotá, CO
                   </p>
                 </div>
                 <div>
@@ -136,7 +136,7 @@ function PesajePage() {
                   </p>
                   <p className="mt-1 font-semibold text-foreground">Ana López</p>
                   <p className="text-xs text-muted-foreground">
-                    Av. Principal, Monterrey, MX
+                    Av. Principal, Medellín, CO
                   </p>
                 </div>
               </div>
@@ -280,29 +280,26 @@ function PesajePage() {
               </div>
 
               <div className="space-y-3 text-sm">
-                <Row label="Tarifa Base (Envío Nacional)" value="$120.00" />
-                <Row label={`Cargo por Peso (${pesoFacturable.toFixed(1)} kg)`} value="$450.00" />
-                <Row label="Cargo por Distancia (840 km)" value="$215.00" />
+                <Row label="Tarifa Base (Envío Nacional)" value="$ 15.000" />
+                <Row label={`Cargo por Peso (${pesoFacturable.toFixed(1)} kg)`} value="$ 45.000" />
+                <Row label="Cargo por Distancia (840 km)" value="$ 21.500" />
                 <Row
                   label="Recargo 'Carga Especial'"
-                  value="+$85.00"
+                  value="+$ 8.500"
                   accent
                 />
-                <Row label="Seguro de Mercancía" value="$45.00" />
+                <Row label="Seguro de Mercancía" value="$ 4.500" />
 
                 <div className="my-3 border-t border-dashed border-border" />
-
-                <Row label="Subtotal" value="$915.00" muted />
-                <Row label="IVA (16%)" value="$146.40" muted />
               </div>
 
               <div className="mt-5 rounded-xl bg-gradient-to-br from-primary to-primary-glow p-5 text-primary-foreground shadow-[var(--shadow-elevated)]">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold opacity-90">
-                    Total a Pagar
+                    Total a Pagar (COP)
                   </span>
                   <span className="text-3xl font-bold tracking-tight">
-                    $1,061.40
+                    $ 94.500
                   </span>
                 </div>
               </div>

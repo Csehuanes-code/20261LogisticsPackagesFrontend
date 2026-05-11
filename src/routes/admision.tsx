@@ -41,13 +41,16 @@ export const Route = createFileRoute("/admision")({
 });
 
 function AdmissionPage() {
-  const [senderDocType, setSenderDocType] = useState("dni");
-  const [receiverDocType, setReceiverDocType] = useState("dni");
-  const [paymentMethod, setPaymentMethod] = useState("efectivo");
+  const [senderDocType, setSenderDocType] = useState("cc");
+  const [receiverDocType, setReceiverDocType] = useState("cc");
+  const [paymentMethod, setPaymentMethod] = useState("prepago");
   const [gpsError, setGpsError] = useState(false);
 
   return (
-    <AppLayout icon={<Package className="h-5 w-5 text-primary-foreground" />} title="HERMES EXPRESS">
+    <AppLayout
+      icon={<Package className="h-5 w-5 text-primary-foreground" />}
+      title="HERMES EXPRESS"
+    >
       <main className="mx-auto max-w-7xl px-6 py-8">
         {/* Breadcrumb + title */}
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
@@ -90,9 +93,9 @@ function AdmissionPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="dni">DNI - Documento Nacional</SelectItem>
-                      <SelectItem value="ruc">RUC</SelectItem>
-                      <SelectItem value="ce">Carnet de Extranjería</SelectItem>
+                      <SelectItem value="cc">CC - Cédula de ciudadanía</SelectItem>
+                      <SelectItem value="ce">Cédula de extranjería</SelectItem>
+                      <SelectItem value="nit">NIT</SelectItem>
                       <SelectItem value="pasaporte">Pasaporte</SelectItem>
                     </SelectContent>
                   </Select>
@@ -128,9 +131,10 @@ function AdmissionPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="dni">DNI - Documento Nacional</SelectItem>
-                      <SelectItem value="ruc">RUC</SelectItem>
-                      <SelectItem value="ce">Carnet de Extranjería</SelectItem>
+                      <SelectItem value="cc">CC - Cédula de ciudadanía</SelectItem>
+                      <SelectItem value="ce">Cédula de extranjería</SelectItem>
+                      <SelectItem value="nit">NIT</SelectItem>
+                      <SelectItem value="pasaporte">Pasaporte</SelectItem>
                     </SelectContent>
                   </Select>
                 </Field>
@@ -173,8 +177,12 @@ function AdmissionPage() {
                   </span>
                   <h2 className="text-sm font-bold text-foreground">Cobertura Geográfica</h2>
                 </div>
-                <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${gpsError ? 'bg-destructive/15 text-destructive' : 'bg-success/15 text-success'}`}>
-                  {gpsError ? 'FALLO DE GPS' : 'Dentro de rango'}
+                <span
+                  className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                    gpsError ? "bg-destructive/15 text-destructive" : "bg-success/15 text-success"
+                  }`}
+                >
+                  {gpsError ? "FALLO DE GPS" : "Dentro de rango"}
                 </span>
               </div>
 
@@ -225,8 +233,13 @@ function AdmissionPage() {
                   </div>
                 </div>
               )}
-               <div className="flex items-center justify-end gap-2 border-t border-border bg-card/50 px-5 py-3">
-                <Label htmlFor="gps-error-switch" className="text-xs font-bold text-muted-foreground">Simular Fallo de GPS</Label>
+              <div className="flex items-center justify-end gap-2 border-t border-border bg-card/50 px-5 py-3">
+                <Label
+                  htmlFor="gps-error-switch"
+                  className="text-xs font-bold text-muted-foreground"
+                >
+                  Simular Fallo de GPS
+                </Label>
                 <Switch id="gps-error-switch" checked={gpsError} onCheckedChange={setGpsError} />
               </div>
             </div>
@@ -259,10 +272,8 @@ function AdmissionPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="efectivo">Efectivo (Sede Central)</SelectItem>
-                    <SelectItem value="tarjeta">Tarjeta de Crédito</SelectItem>
-                    <SelectItem value="transferencia">Transferencia Bancaria</SelectItem>
-                    <SelectItem value="yape">Yape / Plin</SelectItem>
+                    <SelectItem value="prepago">Prepago</SelectItem>
+                    <SelectItem value="contra-entrega">Contra Entrega</SelectItem>
                   </SelectContent>
                 </Select>
               </Field>
@@ -283,12 +294,13 @@ function AdmissionPage() {
             </div>
           </div>
         </div>
-        
+
         <Alert className="mt-8">
           <Info className="h-4 w-4" />
           <AlertTitle>Recordatorio para el Operador</AlertTitle>
           <AlertDescription>
-            Al confirmar el registro y asignarse la ruta, informe al cliente que la fecha estimada máxima de entrega es de **7 días hábiles**.
+            Al confirmar el registro y asignarse la ruta, informe al cliente que la fecha estimada
+            máxima de entrega es de **7 días hábiles**.
           </AlertDescription>
         </Alert>
       </main>
