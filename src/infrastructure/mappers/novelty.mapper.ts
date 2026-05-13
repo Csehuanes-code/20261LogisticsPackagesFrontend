@@ -22,6 +22,26 @@ export interface NoveltyDTO {
   closedAt?: string;
 }
 
+export interface BackendNovedadResponseDTO {
+  paqueteId: string;
+  estadoActual: string;
+  historialId: string;
+  mensaje: string;
+}
+
+const DOMAIN_TO_BACKEND_NOVELTY_TYPE: Record<string, string> = {
+  danado: "DAÑADO",
+  extraviado: "EXTRAVIADO",
+  devolucion: "DAÑADO",
+  entregado: "DAÑADO",
+  "en-transito": "DAÑADO",
+};
+
+const BACKEND_TO_DOMAIN_NOVELTY_TYPE: Record<string, NoveltyType> = {
+  DAÑADO: NoveltyType.DAMAGED,
+  EXTRAVIADO: NoveltyType.LOST,
+};
+
 export class NoveltyMapper {
   static toDomain(dto: NoveltyDTO): Novelty {
     return new Novelty(
@@ -55,5 +75,9 @@ export class NoveltyMapper {
       createdAt: domain.createdAt.toISOString(),
       closedAt: domain.closedAt?.toISOString(),
     };
+  }
+
+  static domainTypeToBackend(type: NoveltyType): string {
+    return DOMAIN_TO_BACKEND_NOVELTY_TYPE[type] || "DAÑADO";
   }
 }

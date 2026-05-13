@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "@tanstack/react-router";
-import { CircleUser, MapPin, Bell } from "lucide-react";
+import { CircleUser, MapPin, Bell, LogOut } from "lucide-react";
+import { useAuth } from "../lib/auth-context";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -19,6 +20,8 @@ export function AppLayout({
   iconBgClass = "bg-gradient-to-br from-primary to-primary-glow shadow-[var(--shadow-elevated)]",
   showFinanzas = false,
 }: AppLayoutProps) {
+  const { user, logout } = useAuth();
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="border-b border-border bg-card">
@@ -55,8 +58,10 @@ export function AppLayout({
             </div>
             <div className="flex items-center gap-3">
               <div className="hidden text-right sm:block">
-                <p className="text-sm font-semibold text-foreground">Operador 042</p>
-                <p className="text-xs text-muted-foreground">Turno Mañana</p>
+                <p className="text-sm font-semibold text-foreground">
+                  {user?.username || "Operador"}
+                </p>
+                <p className="text-xs text-muted-foreground">{user?.rol || ""}</p>
               </div>
               <button className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-primary transition-colors hover:bg-secondary/80">
                 <Bell className="h-4 w-4" />
@@ -65,6 +70,13 @@ export function AppLayout({
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary transition-colors hover:bg-secondary/80 cursor-pointer">
                 <CircleUser className="h-5 w-5 text-primary" />
               </div>
+              <button
+                onClick={logout}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                title="Cerrar sesión"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </div>
