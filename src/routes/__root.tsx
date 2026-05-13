@@ -1,6 +1,28 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import {
+  Outlet,
+  Link,
+  createRootRoute,
+  HeadContent,
+  Scripts,
+  useRouter,
+} from "@tanstack/react-router";
+import { AuthProvider, useAuth } from "../lib/auth-context";
 
 import appCss from "../styles.css?url";
+
+const PUBLIC_PATHS = ["/login", "/register"];
+
+function AuthGuard({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  if (!isAuthenticated && !PUBLIC_PATHS.includes(router.state.location.pathname)) {
+    window.location.href = "/login";
+    return null;
+  }
+
+  return <>{children}</>;
+}
 
 function NotFoundComponent() {
   return (
@@ -65,5 +87,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  return <Outlet />;
+  return (
+    <AuthProvider>
+      <AuthGuard>
+        <Outlet />
+      </AuthGuard>
+    </AuthProvider>
+  );
 }

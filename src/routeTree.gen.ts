@@ -10,8 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ReportarNovedadRouteImport } from './routes/reportar-novedad'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as PesajeRouteImport } from './routes/pesaje'
 import { Route as NovedadesRouteImport } from './routes/novedades'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as GestionRouteImport } from './routes/gestion'
 import { Route as DiscrepanciaRouteImport } from './routes/discrepancia'
 import { Route as ClasificacionRouteImport } from './routes/clasificacion'
@@ -23,6 +25,11 @@ const ReportarNovedadRoute = ReportarNovedadRouteImport.update({
   path: '/reportar-novedad',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PesajeRoute = PesajeRouteImport.update({
   id: '/pesaje',
   path: '/pesaje',
@@ -31,6 +38,11 @@ const PesajeRoute = PesajeRouteImport.update({
 const NovedadesRoute = NovedadesRouteImport.update({
   id: '/novedades',
   path: '/novedades',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GestionRoute = GestionRouteImport.update({
@@ -65,8 +77,10 @@ export interface FileRoutesByFullPath {
   '/clasificacion': typeof ClasificacionRoute
   '/discrepancia': typeof DiscrepanciaRoute
   '/gestion': typeof GestionRoute
+  '/login': typeof LoginRoute
   '/novedades': typeof NovedadesRoute
   '/pesaje': typeof PesajeRoute
+  '/register': typeof RegisterRoute
   '/reportar-novedad': typeof ReportarNovedadRoute
 }
 export interface FileRoutesByTo {
@@ -75,8 +89,10 @@ export interface FileRoutesByTo {
   '/clasificacion': typeof ClasificacionRoute
   '/discrepancia': typeof DiscrepanciaRoute
   '/gestion': typeof GestionRoute
+  '/login': typeof LoginRoute
   '/novedades': typeof NovedadesRoute
   '/pesaje': typeof PesajeRoute
+  '/register': typeof RegisterRoute
   '/reportar-novedad': typeof ReportarNovedadRoute
 }
 export interface FileRoutesById {
@@ -86,8 +102,10 @@ export interface FileRoutesById {
   '/clasificacion': typeof ClasificacionRoute
   '/discrepancia': typeof DiscrepanciaRoute
   '/gestion': typeof GestionRoute
+  '/login': typeof LoginRoute
   '/novedades': typeof NovedadesRoute
   '/pesaje': typeof PesajeRoute
+  '/register': typeof RegisterRoute
   '/reportar-novedad': typeof ReportarNovedadRoute
 }
 export interface FileRouteTypes {
@@ -98,8 +116,10 @@ export interface FileRouteTypes {
     | '/clasificacion'
     | '/discrepancia'
     | '/gestion'
+    | '/login'
     | '/novedades'
     | '/pesaje'
+    | '/register'
     | '/reportar-novedad'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -108,8 +128,10 @@ export interface FileRouteTypes {
     | '/clasificacion'
     | '/discrepancia'
     | '/gestion'
+    | '/login'
     | '/novedades'
     | '/pesaje'
+    | '/register'
     | '/reportar-novedad'
   id:
     | '__root__'
@@ -118,8 +140,10 @@ export interface FileRouteTypes {
     | '/clasificacion'
     | '/discrepancia'
     | '/gestion'
+    | '/login'
     | '/novedades'
     | '/pesaje'
+    | '/register'
     | '/reportar-novedad'
   fileRoutesById: FileRoutesById
 }
@@ -129,8 +153,10 @@ export interface RootRouteChildren {
   ClasificacionRoute: typeof ClasificacionRoute
   DiscrepanciaRoute: typeof DiscrepanciaRoute
   GestionRoute: typeof GestionRoute
+  LoginRoute: typeof LoginRoute
   NovedadesRoute: typeof NovedadesRoute
   PesajeRoute: typeof PesajeRoute
+  RegisterRoute: typeof RegisterRoute
   ReportarNovedadRoute: typeof ReportarNovedadRoute
 }
 
@@ -141,6 +167,13 @@ declare module '@tanstack/react-router' {
       path: '/reportar-novedad'
       fullPath: '/reportar-novedad'
       preLoaderRoute: typeof ReportarNovedadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pesaje': {
@@ -155,6 +188,13 @@ declare module '@tanstack/react-router' {
       path: '/novedades'
       fullPath: '/novedades'
       preLoaderRoute: typeof NovedadesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/gestion': {
@@ -201,8 +241,10 @@ const rootRouteChildren: RootRouteChildren = {
   ClasificacionRoute: ClasificacionRoute,
   DiscrepanciaRoute: DiscrepanciaRoute,
   GestionRoute: GestionRoute,
+  LoginRoute: LoginRoute,
   NovedadesRoute: NovedadesRoute,
   PesajeRoute: PesajeRoute,
+  RegisterRoute: RegisterRoute,
   ReportarNovedadRoute: ReportarNovedadRoute,
 }
 export const routeTree = rootRouteImport
