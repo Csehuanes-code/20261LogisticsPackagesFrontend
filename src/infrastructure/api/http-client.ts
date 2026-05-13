@@ -1,60 +1,60 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080/api";
+import axios, { AxiosError } from "axios";
 
-export interface HttpClientConfig {
-  baseUrl?: string;
-  headers?: Record<string, string>;
+const TOKEN_KEY = import.meta.env.VITE_TOKEN_KEY || "auth_token";
+
+function getToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY);
 }
 
-export class HttpClient {
-  private baseUrl: string;
-  private defaultHeaders: Record<string, string>;
-
-  constructor(config?: HttpClientConfig) {
-    this.baseUrl = config?.baseUrl ?? BASE_URL;
-    this.defaultHeaders = {
-      "Content-Type": "application/json",
-      ...config?.headers,
-    };
-  }
-
-  async get<T>(path: string): Promise<T> {
-    const res = await fetch(`${this.baseUrl}${path}`, {
-      method: "GET",
-      headers: this.defaultHeaders,
-    });
-    if (!res.ok) throw new Error(`GET ${path} failed: ${res.status}`);
-    return res.json();
-  }
-
-  async post<T>(path: string, body: unknown): Promise<T> {
-    const res = await fetch(`${this.baseUrl}${path}`, {
-      method: "POST",
-      headers: this.defaultHeaders,
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) throw new Error(`POST ${path} failed: ${res.status}`);
-    return res.json();
-  }
-
-  async put<T>(path: string, body: unknown): Promise<T> {
-    const res = await fetch(`${this.baseUrl}${path}`, {
-      method: "PUT",
-      headers: this.defaultHeaders,
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) throw new Error(`PUT ${path} failed: ${res.status}`);
-    return res.json();
-  }
-
-  async patch<T>(path: string, body: unknown): Promise<T> {
-    const res = await fetch(`${this.baseUrl}${path}`, {
-      method: "PATCH",
-      headers: this.defaultHeaders,
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) throw new Error(`PATCH ${path} failed: ${res.status}`);
-    return res.json();
-  }
+function removeToken(): void {
+  localStorage.removeItem(TOKEN_KEY);
 }
 
-export const httpClient = new HttpClient();
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || "15000", 10),
+  headers: { "Content-Type": "application/json" },
+});
+
+api.interceptors.request.use(
+  (config) => {
+    const token = getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error),
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      removeToken();
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  },
+);
+
+export interface ApiErrorResponse {
+  timestamp?: string;
+  status?: number;
+  codigo?: string;
+  mensaje?: string;
+  errores?: Array<{ campo: string; mensaje: string }>;
+}
+
+export function parseApiError(error: unknown): ApiErrorResponse {
+  if (axios.isAxiosError(error) && error.response?.data) {
+    return error.response.data as ApiErrorResponse;
+  }
+  return {
+    codigo: "ERROR_INESPERADO",
+    mensaje: error instanceof Error ? error.message : "Error inesperado",
+  };
+}
+
+export { getToken, removeToken, TOKEN_KEY };
+export default api;
