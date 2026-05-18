@@ -3,7 +3,7 @@
  * Representa el peso en kilogramos con validaciones de dominio
  */
 export class Weight {
-  private constructor(private readonly value: number) {}
+  private constructor(readonly value: number) {}
 
   /**
    * Crea una instancia de Weight
@@ -11,8 +11,8 @@ export class Weight {
    * @returns Instancia de Weight
    */
   static create(kg: number): Weight {
-    if (kg < 0) {
-      throw new Error("El peso no puede ser negativo");
+    if (kg <= 0 || kg > 70) {
+      throw new Error("El peso debe estar entre 0.01 y 70 kg");
     }
     return new Weight(kg);
   }

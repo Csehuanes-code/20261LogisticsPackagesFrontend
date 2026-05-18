@@ -1,0 +1,6 @@
+export enum ZoneCategory {
+  NORMAL = "NORMAL",
+  DELICATE = "DELICATE",
+  HIGH_RISK = "HIGH_RISK",
+  CONTINGENCY = "CONTINGENCY",
+}
