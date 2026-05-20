@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { MapPin, Building2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -8,13 +7,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Controller, Control } from "react-hook-form";
 import { FormCard } from "../shared/FormCard";
 import { Field } from "../shared/Field";
-import { DocumentType } from "@/domain/enums/document-type.enum";
+import { DocumentType, DocumentTypeLabel } from "@/domain/enums/document-type.enum";
 
-export function RecipientForm() {
-  const [docType, setDocType] = useState(DocumentType.DNI);
+interface RecipientFormProps {
+  control: Control<any>;
+}
 
+export function RecipientForm({ control }: RecipientFormProps) {
   return (
     <FormCard
       icon={<MapPin className="h-4 w-4" />}
@@ -23,38 +25,103 @@ export function RecipientForm() {
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Tipo de Documento">
-          <Select value={docType} onValueChange={(v) => setDocType(v as DocumentType)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={DocumentType.DNI}>DNI - Documento Nacional</SelectItem>
-              <SelectItem value={DocumentType.RUC}>RUC</SelectItem>
-              <SelectItem value={DocumentType.CE}>Carnet de Extranjería</SelectItem>
-            </SelectContent>
-          </Select>
+          <Controller
+            name="destinatario.tipoDocumento"
+            control={control}
+            defaultValue={DocumentType.CEDULA_CIUDADANIA}
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={DocumentType.CEDULA_CIUDADANIA}>{DocumentTypeLabel[DocumentType.CEDULA_CIUDADANIA]}</SelectItem>
+                  <SelectItem value={DocumentType.CEDULA_EXTRANJERIA}>{DocumentTypeLabel[DocumentType.CEDULA_EXTRANJERIA]}</SelectItem>
+                  <SelectItem value={DocumentType.PASAPORTE}>{DocumentTypeLabel[DocumentType.PASAPORTE]}</SelectItem>
+                  <SelectItem value={DocumentType.NIT}>{DocumentTypeLabel[DocumentType.NIT]}</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
         </Field>
         <Field label="Número de Documento">
-          <Input placeholder="Ej: 45678901" />
+          <Controller
+            name="destinatario.numeroDocumento"
+            control={control}
+            defaultValue=""
+            render={({ field }) => (
+              <Input placeholder="Ej: 45678901" {...field} />
+            )}
+          />
         </Field>
       </div>
       <Field label="Nombre Completo">
-        <Input placeholder="Nombre de quien recibe" />
+        <Controller
+          name="destinatario.nombreCompleto"
+          control={control}
+          defaultValue=""
+          render={({ field }) => (
+            <Input placeholder="Nombre de quien recibe" {...field} />
+          )}
+        />
       </Field>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Teléfono">
-          <Input placeholder="987 654 321" />
+          <Controller
+            name="destinatario.telefono"
+            control={control}
+            defaultValue=""
+            render={({ field }) => (
+              <Input placeholder="987 654 321" {...field} />
+            )}
+          />
         </Field>
         <Field label="Correo Electrónico">
-          <Input type="email" placeholder="usuario@ejemplo.com" />
+          <Controller
+            name="destinatario.correoElectronico"
+            control={control}
+            defaultValue=""
+            render={({ field }) => (
+              <Input type="email" placeholder="usuario@ejemplo.com" {...field} />
+            )}
+          />
         </Field>
       </div>
       <Field label="Dirección de Entrega">
         <div className="relative">
           <Building2 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input className="pl-9" placeholder="Av. Principal 123, Distrito, Ciudad" />
+          <Controller
+            name="direccionDestino.direccion"
+            control={control}
+            defaultValue=""
+            render={({ field }) => (
+              <Input className="pl-9" placeholder="Av. Principal 123" {...field} />
+            )}
+          />
         </div>
       </Field>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Ciudad">
+          <Controller
+            name="direccionDestino.ciudad"
+            control={control}
+            defaultValue=""
+            render={({ field }) => (
+              <Input placeholder="Ej: Lima" {...field} />
+            )}
+          />
+        </Field>
+        <Field label="Departamento/Región">
+          <Controller
+            name="direccionDestino.departamento"
+            control={control}
+            defaultValue=""
+            render={({ field }) => (
+              <Input placeholder="Ej: Lima" {...field} />
+            )}
+          />
+        </Field>
+      </div>
     </FormCard>
   );
 }

@@ -16,7 +16,8 @@ export interface PesajeResponseDto {
 }
 
 /**
- * DTO de request para el endpoint de pesaje
+ * DTO de request para el endpoint de pesaje (FE-4: tarifas removidas)
+ * Las tarifas se leen desde el backend (application.yml) desde BE-3
  */
 export interface PesajeRequestDto {
   paqueteId: string;
@@ -26,11 +27,6 @@ export interface PesajeRequestDto {
   altoCm: number;
   tipoMercancia: string;
   formaIrregular: boolean;
-  tarifaBase: number;
-  tarifaPorKg: number;
-  tarifaPorKm: number;
-  recargoTipoMercancia: number;
-  recargoCategoriaCarga: number;
 }
 
 /**
@@ -52,6 +48,7 @@ export class WeighingApiService {
     data: WeighingData
   ): Promise<PesajeResponseDto> {
     try {
+      // FE-4: Las tarifas se eliminan del request (se leen desde backend en BE-3)
       const requestDto: PesajeRequestDto = {
         paqueteId: data.paqueteId,
         peso: data.peso,
@@ -60,11 +57,6 @@ export class WeighingApiService {
         altoCm: data.altoCm,
         tipoMercancia: data.tipoMercancia,
         formaIrregular: data.formaIrregular,
-        tarifaBase: data.tarifaBase,
-        tarifaPorKg: data.tarifaPorKg,
-        tarifaPorKm: data.tarifaPorKm,
-        recargoTipoMercancia: data.recargoTipoMercancia,
-        recargoCategoriaCarga: data.recargoCategoriaCarga,
       };
 
       const response = await httpClient.post<PesajeResponseDto>(

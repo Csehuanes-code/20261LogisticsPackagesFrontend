@@ -3,7 +3,10 @@ import axios, { AxiosError } from "axios";
 const TOKEN_KEY = import.meta.env.VITE_TOKEN_KEY || "auth_token";
 
 function getToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY);
+  if (typeof window !== "undefined" && window.localStorage) {
+    return localStorage.getItem(TOKEN_KEY);
+  }
+  return null;
 }
 
 function removeToken(): void {

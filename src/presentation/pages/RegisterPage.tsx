@@ -26,7 +26,7 @@ export function RegisterPage() {
     setLoading(false);
 
     if (result.success) {
-      setAuth(result.user.username, result.user);
+      setAuth(result.token, result.user);
       navigate({ to: "/" });
     } else {
       setError(result.error);
