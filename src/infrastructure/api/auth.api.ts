@@ -59,14 +59,14 @@ export function isTokenExpired(token: string): boolean {
 export async function login(
   username: string,
   password: string,
-): Promise<{ success: true; user: AuthUser } | { success: false; error: string }> {
+): Promise<{ success: true; user: AuthUser; token: string } | { success: false; error: string }> {
   try {
     const response = await api.post<LoginResponse>("/api/auth/login", { username, password });
     const { token, username: user, rol } = response.data;
     setStoredToken(token);
     const authUser: AuthUser = { username: user, rol };
     setStoredUser(authUser);
-    return { success: true, user: authUser };
+    return { success: true, user: authUser, token };
   } catch (error) {
     const parsed = parseApiError(error);
     if (parsed.codigo === "CREDENCIALES_INVALIDAS") {
@@ -78,14 +78,14 @@ export async function login(
 
 export async function register(
   data: RegisterRequest,
-): Promise<{ success: true; user: AuthUser } | { success: false; error: string }> {
+): Promise<{ success: true; user: AuthUser; token: string } | { success: false; error: string }> {
   try {
     const response = await api.post<LoginResponse>("/api/auth/register", data);
     const { token, username, rol } = response.data;
     setStoredToken(token);
     const authUser: AuthUser = { username, rol };
     setStoredUser(authUser);
-    return { success: true, user: authUser };
+    return { success: true, user: authUser, token };
   } catch (error) {
     const parsed = parseApiError(error);
     return { success: false, error: parsed.mensaje || "Error al registrar usuario" };

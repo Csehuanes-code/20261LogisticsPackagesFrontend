@@ -1,6 +1,16 @@
 import { Info } from "lucide-react";
 
-export function ShipmentSummary() {
+interface ShipmentSummaryProps {
+  remitenteNombre: string | null;
+  destinatarioNombre: string | null;
+  direccionDestino: string | null;
+}
+
+export function ShipmentSummary({ 
+  remitenteNombre, 
+  destinatarioNombre, 
+  direccionDestino 
+}: ShipmentSummaryProps) {
   return (
     <section className="rounded-xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
       <div className="mb-5 flex items-center gap-2.5">
@@ -14,15 +24,15 @@ export function ShipmentSummary() {
           <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
             Remitente
           </p>
-          <p className="mt-1 font-semibold text-foreground">Juan Pérez</p>
-          <p className="text-xs text-muted-foreground">Calle 10, CDMX, MX</p>
+          <p className="mt-1 font-semibold text-foreground">{remitenteNombre || "N/A"}</p>
+          <p className="text-xs text-muted-foreground">Sede registrada</p>
         </div>
         <div>
           <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
             Destinatario
           </p>
-          <p className="mt-1 font-semibold text-foreground">Ana López</p>
-          <p className="text-xs text-muted-foreground">Av. Principal, Monterrey, MX</p>
+          <p className="mt-1 font-semibold text-foreground">{destinatarioNombre || "N/A"}</p>
+          <p className="text-xs text-muted-foreground">{direccionDestino || "Sin dirección"}</p>
         </div>
       </div>
     </section>

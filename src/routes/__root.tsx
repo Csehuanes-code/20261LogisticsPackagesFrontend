@@ -7,6 +7,7 @@ import {
   useRouter,
 } from "@tanstack/react-router";
 import { AuthProvider, useAuth } from "../lib/auth-context";
+import { AdmissionProvider } from "../lib/admission-context";
 
 import appCss from "../styles.css?url";
 
@@ -90,7 +91,9 @@ function RootComponent() {
   return (
     <AuthProvider>
       <AuthGuard>
-        <Outlet />
+        <AdmissionProvider>
+          <Outlet />
+        </AdmissionProvider>
       </AuthGuard>
     </AuthProvider>
   );

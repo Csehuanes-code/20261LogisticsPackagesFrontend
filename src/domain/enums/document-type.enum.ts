@@ -1,13 +1,13 @@
 export enum DocumentType {
-  DNI = "dni",
-  RUC = "ruc",
-  CE = "ce",
-  PASSPORT = "pasaporte",
+  CEDULA_CIUDADANIA = "CEDULA_CIUDADANIA",
+  CEDULA_EXTRANJERIA = "CEDULA_EXTRANJERIA",
+  PASAPORTE = "PASAPORTE",
+  NIT = "NIT",
 }
 
 export const DocumentTypeLabel: Record<DocumentType, string> = {
-  [DocumentType.DNI]: "DNI - Documento Nacional",
-  [DocumentType.RUC]: "RUC",
-  [DocumentType.CE]: "Carnet de Extranjería",
-  [DocumentType.PASSPORT]: "Pasaporte",
+  [DocumentType.CEDULA_CIUDADANIA]: "Cédula de Ciudadanía",
+  [DocumentType.CEDULA_EXTRANJERIA]: "Cédula de Extranjería",
+  [DocumentType.PASAPORTE]: "Pasaporte",
+  [DocumentType.NIT]: "NIT",
 };

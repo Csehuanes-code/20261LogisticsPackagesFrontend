@@ -1,5 +1,8 @@
-import { Package, ChevronRight, Truck, Info } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { Package, Truck, Info, Loader2 } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AppLayout } from "@/components/AppLayout";
@@ -8,8 +11,100 @@ import { SenderForm } from "../components/admission/SenderForm";
 import { RecipientForm } from "../components/admission/RecipientForm";
 import { CoverageMap } from "../components/admission/CoverageMap";
 import { ShippingInfoSection } from "../components/admission/ShippingInfoSection";
+import { useAdmission } from "@/lib/admission-context";
+import { AdmisionApiService } from "@/infrastructure/http/admission-api.service";
+import { DocumentType } from "@/domain/enums/document-type.enum";
+import { PaymentMethod } from "@/domain/enums/payment-method.enum";
 
 export function AdmissionPage() {
+  const navigate = useNavigate();
+  const { 
+    setPaqueteId, 
+    setEtiquetaDigital, 
+    setEstadoGps, 
+    setEstado,
+    setSedeId,
+    setRemitenteNombre,
+    setDestinatarioNombre,
+    setDireccionDestinoTexto,
+    estadoGps, 
+    paqueteId 
+  } = useAdmission();
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // FE-2: Configurar formulario con react-hook-form
+  const { handleSubmit, control, register } = useForm({
+    defaultValues: {
+      sedeId: "550e8400-e29b-41d4-a716-446655440001", // Fixed como por instrucciones
+      remitente: {
+        tipoDocumento: DocumentType.CEDULA_CIUDADANIA,
+        numeroDocumento: "",
+        nombreCompleto: "",
+        telefono: "",
+      },
+      destinatario: {
+        tipoDocumento: DocumentType.CEDULA_CIUDADANIA,
+        numeroDocumento: "",
+        nombreCompleto: "",
+        telefono: "",
+        correoElectronico: "",
+      },
+      direccionDestino: {
+        direccion: "",
+        ciudad: "",
+        departamento: "",
+        pais: "COLOMBIA",
+      },
+      valorDeclarado: 0,
+      metodoPago: PaymentMethod.PREPAGO,
+      indicadorFormaIrregular: false,
+      peso: 1.0,
+      largo: 1.0,
+      ancho: 1.0,
+      alto: 1.0,
+    },
+  });
+
+  const onSubmit = async (data: any) => {
+    setIsSubmitting(true);
+    try {
+      // FE-2: Llamar al backend con AdmisionApiService - payload 100% dinámico
+      const response = await AdmisionApiService.registerAdmision(data);
+
+      // Guardar respuesta en contexto
+      setPaqueteId(response.paqueteId);
+      setEtiquetaDigital(response.etiquetaDigital);
+      setEstadoGps(response.estadoGps);
+      setEstado(response.estado);
+      setSedeId(data.sedeId);
+      
+      // Guardar nombres del remitente y destinatario para mostrar en pesaje
+      setRemitenteNombre(data.remitente.nombreCompleto);
+      setDestinatarioNombre(data.destinatario.nombreCompleto);
+      setDireccionDestinoTexto(`${data.direccionDestino.ciudad}, ${data.direccionDestino.departamento}`);
+
+      // FE-2: Validar estado GPS para decidir flujo
+      if (response.estadoGps === "PENDIENTE") {
+        toast.info("📍 Geolocalización pendiente. Por favor ingrese coordenadas manualmente.");
+      } else if (response.estadoGps === "RESUELTO") {
+        toast.success("✅ Admisión registrada. Continuando al pesaje...");
+        // Redirigir automáticamente a pesaje
+        setTimeout(() => {
+          navigate({ to: "/pesaje" });
+        }, 1000);
+      }
+    } catch (error: any) {
+      if (error.message.includes("COBERTURA_INVALIDA")) {
+        toast.error("❌ Dirección fuera de cobertura. Por favor verifique los datos de entrega.");
+      } else {
+        toast.error(`Error al registrar: ${error.message}`);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <AppLayout
       icon={<Package className="h-5 w-5 text-primary-foreground" />}
@@ -32,28 +127,52 @@ export function AdmissionPage() {
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-5">
-          <div className="space-y-6 lg:col-span-3">
-            <SenderForm />
-            <RecipientForm />
-          </div>
-          <div className="space-y-6 lg:col-span-2">
-            <CoverageMap />
-            <ShippingInfoSection />
-            <div className="space-y-3">
-              <Button
-                asChild
-                size="lg"
-                className="h-14 w-full bg-gradient-to-r from-primary to-primary-glow text-base font-bold shadow-[var(--shadow-elevated)] transition-transform hover:scale-[1.01] hover:shadow-lg"
-              >
-                <Link to="/pesaje">
-                  Continuar al Pesaje
-                  <Truck className="ml-1 h-5 w-5" />
-                </Link>
-              </Button>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="grid gap-6 lg:grid-cols-5">
+            <div className="space-y-6 lg:col-span-3">
+              <SenderForm control={control as any} />
+              <RecipientForm control={control as any} />
+            </div>
+            <div className="space-y-6 lg:col-span-2">
+              {/* FE-5: Pasar props reales de GPS al CoverageMap (contingencia GPS) */}
+              <CoverageMap 
+                estadoGps={estadoGps ?? undefined}
+                paqueteId={paqueteId ?? undefined}
+                onCoordinatesUpdate={(lat, lon) => {
+                  // Callback: Cuando se actualizan las coordenadas manualmente
+                  setEstadoGps("RESUELTO");
+                }}
+              />
+              <ShippingInfoSection control={control as any} />
+              <div className="space-y-3">
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={isSubmitting}
+                  className="h-14 w-full bg-gradient-to-r from-primary to-primary-glow text-base font-bold shadow-[var(--shadow-elevated)] transition-transform hover:scale-[1.01] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Registrando...
+                    </>
+                  ) : (
+                    <>
+                      Continuar al Pesaje
+                      <Truck className="ml-1 h-5 w-5" />
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+          {/* Campos ocultos para dimensiones mínimas - Aseguran tipos numéricos para el backend */}
+          <input type="hidden" value="false" {...register("indicadorFormaIrregular")} />
+          <input type="hidden" value={1.0} {...register("peso", { valueAsNumber: true })} />
+          <input type="hidden" value={1.0} {...register("largo", { valueAsNumber: true })} />
+          <input type="hidden" value={1.0} {...register("ancho", { valueAsNumber: true })} />
+          <input type="hidden" value={1.0} {...register("alto", { valueAsNumber: true })} />
+        </form>
 
         <Alert className="mt-8">
           <Info className="h-4 w-4" />
