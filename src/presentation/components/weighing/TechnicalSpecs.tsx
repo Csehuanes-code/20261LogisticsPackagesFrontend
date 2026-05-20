@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Ruler, PackageSearch } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -8,12 +8,28 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 interface TechnicalSpecsProps {
   onDimensionsChange: (volumeM3: number) => void;
   onWeightChange: (kg: number) => void;
+  onIrregularChange?: (irregular: boolean) => void;
+  onDimensionsRaw?: (length: number, width: number, height: number) => void;
 }
 
-export function TechnicalSpecs({ onDimensionsChange, onWeightChange }: TechnicalSpecsProps) {
+export function TechnicalSpecs({ 
+  onDimensionsChange, 
+  onWeightChange,
+  onIrregularChange,
+  onDimensionsRaw
+}: TechnicalSpecsProps) {
   const [irregular, setIrregular] = useState(false);
+  const [length, setLength] = useState<number>(0);
+  const [width, setWidth] = useState<number>(0);
+  const [height, setHeight] = useState<number>(0);
 
-  const handleDimensionChange = () => {};
+  const handleDimensionChange = useCallback(() => {
+    if (length > 0 && width > 0 && height > 0) {
+      const volumeM3 = (length * width * height) / 1_000_000;
+      onDimensionsChange(volumeM3);
+      onDimensionsRaw?.(length, width, height);
+    }
+  }, [length, width, height, onDimensionsChange, onDimensionsRaw]);
 
   return (
     <section className="rounded-xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
@@ -46,33 +62,73 @@ export function TechnicalSpecs({ onDimensionsChange, onWeightChange }: Technical
       )}
 
       <div className="grid gap-4 sm:grid-cols-3">
-        {["Largo", "Ancho", "Alto"].map((d) => (
-          <div key={d} className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-              {d} (cm)
-            </label>
-            <Input placeholder="00" type="number" />
-          </div>
-        ))}
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            Largo (cm)
+          </label>
+          <Input 
+            placeholder="00" 
+            type="number"
+            value={length || ""}
+            onChange={(e) => {
+              const value = e.target.value.trim();
+              setLength(value === "" ? 0 : (isNaN(parseFloat(value)) ? 0 : parseFloat(value)));
+              handleDimensionChange();
+            }}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            Ancho (cm)
+          </label>
+          <Input 
+            placeholder="00" 
+            type="number"
+            value={width || ""}
+            onChange={(e) => {
+              const value = e.target.value.trim();
+              setWidth(value === "" ? 0 : (isNaN(parseFloat(value)) ? 0 : parseFloat(value)));
+              handleDimensionChange();
+            }}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            Alto (cm)
+          </label>
+          <Input 
+            placeholder="00" 
+            type="number"
+            value={height || ""}
+            onChange={(e) => {
+              const value = e.target.value.trim();
+              setHeight(value === "" ? 0 : (isNaN(parseFloat(value)) ? 0 : parseFloat(value)));
+              handleDimensionChange();
+            }}
+          />
+        </div>
       </div>
 
-      <div className="mt-4 space-y-1.5">
-        <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-          Peso Real (kg)
-        </label>
-        <div className="relative">
-          <Input
-            placeholder="0.00"
-            type="number"
-            className="pr-12"
-            onChange={(e) => onWeightChange(e.target.valueAsNumber)}
-          />
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
-            kg
-          </span>
-        </div>
-        <p className="text-[11px] italic text-muted-foreground">Rango permitido: 0.01 - 70.00 kg</p>
-      </div>
+       <div className="mt-4 space-y-1.5">
+         <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+           Peso Real (kg)
+         </label>
+         <div className="relative">
+            <Input
+              placeholder="0.00"
+              type="number"
+              className="pr-12"
+              onChange={(e) => {
+                const value = e.target.valueAsNumber;
+                onWeightChange(isNaN(value) ? 0 : value);
+              }}
+            />
+           <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
+             kg
+           </span>
+         </div>
+         <p className="text-[11px] italic text-muted-foreground">Rango permitido: 0.01 - 70.00 kg</p>
+       </div>
     </section>
   );
 }
