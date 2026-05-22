@@ -7,8 +7,17 @@ export interface StorageZoneSuggestionDTO {
   paqueteId: string;
   zonaId: string;
   nombreZona: string;
+  categoria?: string;
+  tipoMercancia?: string;
   datosActualizados: boolean;
   mensaje: string;
+  pesoActualKg?: number;
+  capacidadMaxKg?: number;
+  volumenActualM3?: number;
+  capacidadMaxM3?: number;
+  contadorPaquetes?: number;
+  capacidadMaxPaquetes?: number;
+  zonaSaturada?: boolean;
 }
 
 /**

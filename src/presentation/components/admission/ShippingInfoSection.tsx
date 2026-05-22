@@ -24,7 +24,7 @@ export function ShippingInfoSection({ control }: ShippingInfoSectionProps) {
       iconBg="bg-primary/10 text-primary"
     >
       <Field
-        label="Valor Declarado (USD)"
+        label="Valor Declarado (COP)"
         hint={
           <span className="text-[10px] font-bold uppercase tracking-wider text-destructive">
             Obligatorio

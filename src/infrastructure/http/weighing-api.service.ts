@@ -1,4 +1,4 @@
-import { httpClient, parseApiError } from "./http-client";
+import httpClient, { parseApiError } from "../api/http-client";
 import type { WeighingData } from "../../domain/validators/weighing.validator";
 
 /**
@@ -68,7 +68,7 @@ export class WeighingApiService {
     } catch (error) {
       const parsedError = parseApiError(error);
       throw new Error(
-        `Error al procesar el pesaje del paquete: ${parsedError.message}`
+        `Error al procesar el pesaje del paquete: ${parsedError.mensaje || "Error desconocido"}`
       );
     }
   }

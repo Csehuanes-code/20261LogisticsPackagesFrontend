@@ -1,15 +1,22 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ClassificationPage } from "@/presentation/pages/ClassificationPage";
-import { useCases } from "@/lib/di";
+import { z } from "zod";
+
+const searchSchema = z.object({
+  paqueteId: z.string().uuid("ID de paquete debe ser un UUID válido").optional(),
+});
+
+type SearchSchema = z.infer<typeof searchSchema>;
 
 export const Route = createFileRoute("/clasificacion")({
   component: ClassificationPage,
-  loader: async () => {
-    const classification = await useCases.classifyDestination.execute({
-      packageId: "PRX-9823-UUID",
-      zoneId: "ZN",
-    });
-    return classification;
+  validateSearch: (search: Record<string, unknown>): SearchSchema => {
+    try {
+      return searchSchema.parse(search);
+    } catch (error) {
+      console.warn("Search params validation failed:", error);
+      return {};
+    }
   },
   head: () => ({
     meta: [
