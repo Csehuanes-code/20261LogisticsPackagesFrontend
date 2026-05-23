@@ -28,7 +28,6 @@ export function StoragePage() {
   const [suggestion, setSuggestion] = useState<StorageZoneSuggestionDTO | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [packageData, setPackageData] = useState<any>(null);
 
   const handleSearch = async () => {
     if (!packageId.trim()) {

@@ -20,6 +20,7 @@ interface AdmissionContextType {
   remitenteNombre: string | null;
   destinatarioNombre: string | null;
   direccionDestinoTexto: string | null;
+  distanciaKm: number | null;
   setPaqueteId: (id: string) => void;
   setEtiquetaDigital: (etiqueta: string) => void;
   setEstadoGps: (estado: "PENDIENTE" | "RESUELTO") => void;
@@ -28,6 +29,7 @@ interface AdmissionContextType {
   setRemitenteNombre: (nombre: string) => void;
   setDestinatarioNombre: (nombre: string) => void;
   setDireccionDestinoTexto: (direccion: string) => void;
+  setDistanciaKm: (distancia: number) => void;
   clearAdmission: () => void;
 }
 
@@ -46,6 +48,7 @@ export function AdmissionProvider({ children }: { children: ReactNode }) {
   const [remitenteNombre, setRemitenteNombre] = useState<string | null>(null);
   const [destinatarioNombre, setDestinatarioNombre] = useState<string | null>(null);
   const [direccionDestinoTexto, setDireccionDestinoTexto] = useState<string | null>(null);
+  const [distanciaKm, setDistanciaKm] = useState<number | null>(null);
 
   const clearAdmission = () => {
     setPaqueteId(null);
@@ -56,6 +59,7 @@ export function AdmissionProvider({ children }: { children: ReactNode }) {
     setRemitenteNombre(null);
     setDestinatarioNombre(null);
     setDireccionDestinoTexto(null);
+    setDistanciaKm(null);
   };
 
   return (
@@ -69,6 +73,7 @@ export function AdmissionProvider({ children }: { children: ReactNode }) {
         remitenteNombre,
         destinatarioNombre,
         direccionDestinoTexto,
+        distanciaKm,
         setPaqueteId,
         setEtiquetaDigital,
         setEstadoGps,
@@ -77,6 +82,7 @@ export function AdmissionProvider({ children }: { children: ReactNode }) {
         setRemitenteNombre,
         setDestinatarioNombre,
         setDireccionDestinoTexto,
+        setDistanciaKm,
         clearAdmission,
       }}
     >

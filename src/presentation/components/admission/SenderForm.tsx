@@ -55,7 +55,7 @@ export function SenderForm({ control }: SenderFormProps) {
           />
         </Field>
       </div>
-      <Field label="Nombre Completo / Razón Social">
+      <Field label="Nombre Completo">
         <Controller
           name="remitente.nombreCompleto"
           control={control}
@@ -65,7 +65,7 @@ export function SenderForm({ control }: SenderFormProps) {
           )}
         />
       </Field>
-      <Field label="Teléfono de Contacto">
+      <Field label="Teléfono">
         <div className="relative">
           <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Controller
@@ -73,7 +73,7 @@ export function SenderForm({ control }: SenderFormProps) {
             control={control}
             defaultValue=""
             render={({ field }) => (
-              <Input className="pl-9" placeholder="999 999 999" {...field} />
+              <Input className="pl-9" placeholder="301 557 4519" {...field} />
             )}
           />
         </div>

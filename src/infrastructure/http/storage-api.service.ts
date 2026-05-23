@@ -60,6 +60,7 @@ export interface ClassificationSuggestionDTO {
   zonaDestinoId: string;
   nombreZona: string;
   codigoZona: string;
+  ciudadDestino: string;
   tieneCapacidad: boolean;
   mensaje: string;
 }

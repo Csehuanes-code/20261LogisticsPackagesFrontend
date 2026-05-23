@@ -1,7 +1,7 @@
 export enum MerchandiseType {
-  STANDARD = "estandar",
-  FRAGILE = "fragil",
-  DANGEROUS = "peligroso",
+  STANDARD = "ESTANDAR",
+  FRAGILE = "FRAGIL",
+  DANGEROUS = "PELIGROSO",
 }
 
 export const MerchandiseTypeLabel: Record<MerchandiseType, string> = {

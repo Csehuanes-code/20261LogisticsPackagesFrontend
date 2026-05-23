@@ -27,6 +27,7 @@ export function AdmissionPage() {
     setRemitenteNombre,
     setDestinatarioNombre,
     setDireccionDestinoTexto,
+    setDistanciaKm,
     estadoGps, 
     paqueteId 
   } = useAdmission();
@@ -83,6 +84,11 @@ export function AdmissionPage() {
       setRemitenteNombre(data.remitente.nombreCompleto);
       setDestinatarioNombre(data.destinatario.nombreCompleto);
       setDireccionDestinoTexto(`${data.direccionDestino.ciudad}, ${data.direccionDestino.departamento}`);
+      
+      // Guardar distancia estimada para cálculo de precio dinámico en pesaje
+      if (response.distanciaEstimadaKm) {
+        setDistanciaKm(response.distanciaEstimadaKm);
+      }
 
       // FE-2: Validar estado GPS para decidir flujo
       if (response.estadoGps === "PENDIENTE") {
@@ -118,7 +124,7 @@ export function AdmissionPage() {
               Admisión de Paquete
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              MOD1-UC-001 · Registro de nuevo envío
+              Registro de nuevo envío
             </p>
           </div>
           <div className="flex items-center gap-2 rounded-full border border-warning/40 bg-warning/10 px-4 py-2 text-sm font-semibold text-foreground">
