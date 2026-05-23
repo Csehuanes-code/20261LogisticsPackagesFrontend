@@ -23,13 +23,13 @@ export function TechnicalSpecs({
   const [width, setWidth] = useState<number>(0);
   const [height, setHeight] = useState<number>(0);
 
-  const handleDimensionChange = useCallback(() => {
-    if (length > 0 && width > 0 && height > 0) {
-      const volumeM3 = (length * width * height) / 1_000_000;
+  const updateDimensions = useCallback((newLength: number, newWidth: number, newHeight: number) => {
+    if (newLength > 0 && newWidth > 0 && newHeight > 0) {
+      const volumeM3 = (newLength * newWidth * newHeight) / 1_000_000;
       onDimensionsChange(volumeM3);
-      onDimensionsRaw?.(length, width, height);
+      onDimensionsRaw?.(newLength, newWidth, newHeight);
     }
-  }, [length, width, height, onDimensionsChange, onDimensionsRaw]);
+  }, [onDimensionsChange, onDimensionsRaw]);
 
   return (
     <section className="rounded-xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
@@ -44,7 +44,14 @@ export function TechnicalSpecs({
           <Label htmlFor="irregular-switch" className="text-xs font-bold text-muted-foreground">
             Forma Irregular
           </Label>
-          <Switch id="irregular-switch" checked={irregular} onCheckedChange={setIrregular} />
+          <Switch 
+            id="irregular-switch" 
+            checked={irregular} 
+            onCheckedChange={(checked) => {
+              setIrregular(checked);
+              onIrregularChange?.(checked);
+            }} 
+          />
         </div>
       </div>
 
@@ -72,8 +79,9 @@ export function TechnicalSpecs({
             value={length || ""}
             onChange={(e) => {
               const value = e.target.value.trim();
-              setLength(value === "" ? 0 : (isNaN(parseFloat(value)) ? 0 : parseFloat(value)));
-              handleDimensionChange();
+              const newLength = value === "" ? 0 : (isNaN(parseFloat(value)) ? 0 : parseFloat(value));
+              setLength(newLength);
+              updateDimensions(newLength, width, height);
             }}
           />
         </div>
@@ -87,8 +95,9 @@ export function TechnicalSpecs({
             value={width || ""}
             onChange={(e) => {
               const value = e.target.value.trim();
-              setWidth(value === "" ? 0 : (isNaN(parseFloat(value)) ? 0 : parseFloat(value)));
-              handleDimensionChange();
+              const newWidth = value === "" ? 0 : (isNaN(parseFloat(value)) ? 0 : parseFloat(value));
+              setWidth(newWidth);
+              updateDimensions(length, newWidth, height);
             }}
           />
         </div>
@@ -102,8 +111,9 @@ export function TechnicalSpecs({
             value={height || ""}
             onChange={(e) => {
               const value = e.target.value.trim();
-              setHeight(value === "" ? 0 : (isNaN(parseFloat(value)) ? 0 : parseFloat(value)));
-              handleDimensionChange();
+              const newHeight = value === "" ? 0 : (isNaN(parseFloat(value)) ? 0 : parseFloat(value));
+              setHeight(newHeight);
+              updateDimensions(length, width, newHeight);
             }}
           />
         </div>

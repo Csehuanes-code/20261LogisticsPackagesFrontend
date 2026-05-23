@@ -72,7 +72,7 @@ export function RecipientForm({ control }: RecipientFormProps) {
             control={control}
             defaultValue=""
             render={({ field }) => (
-              <Input placeholder="987 654 321" {...field} />
+              <Input placeholder="312 654 3218" {...field} />
             )}
           />
         </Field>
@@ -107,17 +107,17 @@ export function RecipientForm({ control }: RecipientFormProps) {
             control={control}
             defaultValue=""
             render={({ field }) => (
-              <Input placeholder="Ej: Lima" {...field} />
+              <Input placeholder="Ej: Bogotá" {...field} />
             )}
           />
         </Field>
-        <Field label="Departamento/Región">
+        <Field label="Departamento">
           <Controller
             name="direccionDestino.departamento"
             control={control}
             defaultValue=""
             render={({ field }) => (
-              <Input placeholder="Ej: Lima" {...field} />
+              <Input placeholder="Ej: Cundinamarca" {...field} />
             )}
           />
         </Field>

@@ -24,7 +24,7 @@ export function CapacitySection({
   const pctPaquetes = capacidadMaxPaquetes > 0 ? Math.round((contadorPaquetes / capacidadMaxPaquetes) * 100) : 0;
 
   // Formatear valores
-  const pesoFormatted = `${pesoActualKg.toFixed(1)} / ${capacidadMaxKg.toFixed(1)} Ton`;
+  const pesoFormatted = `${pesoActualKg.toFixed(1)} / ${capacidadMaxKg.toFixed(1)} Kg`;
   const volumenFormatted = `${volumenActualM3.toFixed(1)} / ${capacidadMaxM3.toFixed(1)} m³`;
   const paquetesFormatted = `${contadorPaquetes.toLocaleString("es-CO")} / ${capacidadMaxPaquetes.toLocaleString("es-CO")}`;
 

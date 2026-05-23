@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Package, AlertTriangle, ArrowRight, LoaderCircle, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import { MerchandiseType } from "@/domain/enums/merchandise-type.enum";
 import { useAdmission } from "@/lib/admission-context";
 import { WeighingApiService } from "@/infrastructure/http/weighing-api.service";
 
+// Constante para cálculo de peso volumétrico
 const DENSITY_FACTOR = 250;
 
 export function WeighingPage() {
@@ -32,7 +33,8 @@ export function WeighingPage() {
     etiquetaDigital,
     remitenteNombre,
     destinatarioNombre,
-    direccionDestinoTexto
+    direccionDestinoTexto,
+    distanciaKm
   } = useAdmission();
   
   const [merch, setMerch] = useState<MerchandiseType>(MerchandiseType.STANDARD);
@@ -40,6 +42,7 @@ export function WeighingPage() {
   const [volumen, setVolumen] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [precioEnvio, setPrecioEnvio] = useState<number | null>(null);
+  const [formaIrregular, setFormaIrregular] = useState(false);
   
   // FE-3: Estados para dimensiones capturadas
   const [lengthCm, setLengthCm] = useState(0);
@@ -79,6 +82,9 @@ export function WeighingPage() {
       const diff = Math.abs(pesoReal - pesoVolumetrico);
       const percentageDiff = (diff / Math.max(pesoReal, pesoVolumetrico)) * 100;
       setShowAtypicalDensityAlert(percentageDiff > 30);
+    } else {
+      // Reset la alerta cuando los valores sean 0 o se borren
+      setShowAtypicalDensityAlert(false);
     }
   }, [pesoReal, pesoVolumetrico]);
 
@@ -95,22 +101,17 @@ export function WeighingPage() {
      }
 
     setIsSubmitting(true);
-    try {
-      // FE-3: Llamar a WeighingApiService.weighPackage()
-      const response = await WeighingApiService.weighPackage({
-        paqueteId,
-        peso: pesoReal,
-        largoCm: lengthCm,
-        anchoCm: widthCm,
-        altoCm: heightCm,
-        tipoMercancia: merch,
-        formaIrregular: false,
-        tarifaBase: 0, // No se usa (será leído desde backend)
-        tarifaPorKg: 0, // No se usa
-        tarifaPorKm: 0, // No se usa
-        recargoTipoMercancia: 0, // No se usa
-        recargoCategoriaCarga: 0, // No se usa
-      });
+     try {
+       // FE-3: Llamar a WeighingApiService.weighPackage()
+       const response = await WeighingApiService.weighPackage({
+         paqueteId,
+         peso: pesoReal,
+         largoCm: lengthCm,
+         anchoCm: widthCm,
+         altoCm: heightCm,
+         tipoMercancia: merch,
+         formaIrregular: formaIrregular,
+       });
 
       // FE-3: Capturar alertas del backend
       if (response.alertas && response.alertas.length > 0) {
@@ -126,12 +127,17 @@ export function WeighingPage() {
        setTimeout(() => {
          navigate({ to: "/gestion" });
        }, 1500);
-    } catch (error: any) {
-      toast.error(`Error al procesar pesaje: ${error.message}`);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+     } catch (error: any) {
+       let errorMsg = error.message || "Error desconocido";
+       // Mejorar mensaje para errores de validación de peso
+       if (errorMsg.includes("Peso") || errorMsg.includes("peso")) {
+         errorMsg = "❌ Peso fuera de rango permitido (0.01 – 70 kg). Por favor corrija el valor.";
+       }
+       toast.error(errorMsg);
+     } finally {
+       setIsSubmitting(false);
+     }
+   };
 
   // FE-3: Confirmar después de revisar alertas
   const handleConfirmWithAlerts = async () => {
@@ -146,12 +152,7 @@ export function WeighingPage() {
         anchoCm: widthCm,
         altoCm: heightCm,
         tipoMercancia: merch,
-        formaIrregular: false,
-        tarifaBase: 0,
-        tarifaPorKg: 0,
-        tarifaPorKm: 0,
-        recargoTipoMercancia: 0,
-        recargoCategoriaCarga: 0,
+        formaIrregular: formaIrregular,
       });
 
        setPrecioEnvio(response.precioEnvio);
@@ -159,12 +160,17 @@ export function WeighingPage() {
        setTimeout(() => {
          navigate({ to: "/gestion" });
        }, 1500);
-    } catch (error: any) {
-      toast.error(`Error al confirmar pesaje: ${error.message}`);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+     } catch (error: any) {
+       let errorMsg = error.message || "Error desconocido";
+       // Mejorar mensaje para errores de validación de peso
+       if (errorMsg.includes("Peso") || errorMsg.includes("peso")) {
+         errorMsg = "❌ Peso fuera de rango permitido (0.01 – 70 kg). Por favor corrija el valor.";
+       }
+       toast.error(errorMsg);
+     } finally {
+       setIsSubmitting(false);
+     }
+   };
 
   return (
     <AppLayout
@@ -200,6 +206,7 @@ export function WeighingPage() {
             <TechnicalSpecs 
               onDimensionsChange={setVolumen} 
               onWeightChange={setPesoReal}
+              onIrregularChange={setFormaIrregular}
               onDimensionsRaw={(length, width, height) => {
                 setLengthCm(length);
                 setWidthCm(width);
@@ -215,7 +222,13 @@ export function WeighingPage() {
             <MerchandiseTypeSelector value={merch} onChange={setMerch} />
           </div>
           <div className="space-y-6 lg:col-span-2">
-            <PriceBreakdownView billableWeight={pesoFacturable} precioEnvio={precioEnvio} />
+            <PriceBreakdownView 
+              billableWeight={pesoFacturable}
+              distanciaKm={distanciaKm}
+              tipoMercancia={merch}
+              cargaEspecial={pesoFacturable > 50 || volumen > 0.5}
+              precioEnvio={precioEnvio} 
+            />
             <div className="space-y-3">
               <Button
                 size="lg"
@@ -245,19 +258,22 @@ export function WeighingPage() {
             <AlertTriangle className="h-5 w-5 text-warning" />
             Alertas Detectadas en el Pesaje
           </AlertDialogTitle>
-          <AlertDialogDescription className="space-y-2">
-            <p>Se han detectado las siguientes alertas. Por favor revise antes de continuar:</p>
-            <ul className="space-y-1">
-              {backendAlerts.map((alert, idx) => (
-                <li key={idx} className="flex items-start gap-2 text-sm">
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-warning" />
-                  <span>{alert}</span>
-                </li>
-              ))}
-            </ul>
+          <AlertDialogDescription>
+            Se han detectado las siguientes alertas. Por favor revise antes de continuar.
           </AlertDialogDescription>
+          <div className="space-y-1 mt-4">
+            {backendAlerts.map((alert, idx) => (
+              <div key={idx} className="flex items-start gap-2 text-sm">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-warning" />
+                <span>{alert}</span>
+              </div>
+            ))}
+          </div>
           <div className="flex gap-2">
-            <AlertDialogCancel>Editar Datos</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => {
+              setShowAlertsDialog(false);
+              setBackendAlerts([]);
+            }}>Editar Datos</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmWithAlerts} disabled={isSubmitting}>
               {isSubmitting ? "Confirmando..." : "Confirmar y Continuar"}
             </AlertDialogAction>

@@ -19,7 +19,6 @@ export function ClassificationPage() {
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [suggestion, setSuggestion] = useState<ClassificationSuggestionDTO | null>(null);
-  const [packageData, setPackageData] = useState<any>(null);
 
   useEffect(() => {
     if (!paqueteId) {
@@ -168,7 +167,7 @@ export function ClassificationPage() {
             <div className="space-y-6">
               <PackageInfoCard
                 type="Paquete en Clasificación"
-                destination={paqueteId}
+                destination={suggestion.ciudadDestino || "Desconocida"}
                 highlight
               />
               <section className="rounded-xl border border-primary/30 bg-primary/5 p-6">

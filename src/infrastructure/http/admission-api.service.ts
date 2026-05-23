@@ -8,6 +8,7 @@ export interface AdmisionResponseDto {
   etiquetaDigital: string;
   estadoGps: "PENDIENTE" | "RESUELTO";
   estado: string;
+  distanciaEstimadaKm?: number;
 }
 
 /**
