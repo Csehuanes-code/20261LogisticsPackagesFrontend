@@ -7,6 +7,7 @@ export interface StorageZoneSuggestionDTO {
   paqueteId: string;
   zonaId: string;
   nombreZona: string;
+  nombreZonaPrincipal?: string;
   categoria?: string;
   tipoMercancia?: string;
   datosActualizados: boolean;
@@ -212,35 +213,36 @@ export class StorageApiService {
     }
   }
 
-  /**
-   * Confirma la clasificación de un paquete en una zona de destino.
-   * MOD1-IP-005: FR-002, FR-003, FR-004
-   * 
-   * @param packageId ID del paquete
-   * @param destinationZoneId ID de la zona de destino confirmada
-   * @returns Confirmación de clasificación
-   */
-  static async confirmClassification(
-    packageId: string,
-    destinationZoneId: string
-  ): Promise<ConfirmacionClasificacionDTO> {
-    try {
-      const requestData: ConfirmarZonaRequestDTO = {
-        paqueteId: packageId,
-        zonaDestinoId: destinationZoneId,
-      };
+   /**
+    * Confirma la clasificación de un paquete en una zona de destino.
+    * MOD1-IP-005: FR-002, FR-003, FR-004
+    * 
+    * @param packageId ID del paquete
+    * @param destinationZoneId ID de la zona de destino confirmada
+    * @returns Confirmación de clasificación
+    */
+   static async confirmClassification(
+     packageId: string,
+     destinationZoneId: string
+   ): Promise<ConfirmacionClasificacionDTO> {
+     try {
+       const requestData: ConfirmarZonaRequestDTO = {
+         paqueteId: packageId,
+         zonaDestinoId: destinationZoneId,
+       };
 
-      const response = await httpClient.post<ConfirmacionClasificacionDTO>(
-        `${this.BASE_URL}/clasificacion/confirmar`,
-        requestData
-      );
-      return response.data;
-    } catch (error) {
-      const parsedError = parseApiError(error);
-      const err = new Error(parsedError.mensaje || "Error desconocido") as any;
-      err.codigo = parsedError.codigo;
-      err.mensaje = parsedError.mensaje;
-      throw err;
-    }
-  }
-}
+       const response = await httpClient.post<ConfirmacionClasificacionDTO>(
+         `${this.BASE_URL}/clasificacion/confirmar`,
+         requestData
+       );
+       return response.data;
+     } catch (error) {
+       const parsedError = parseApiError(error);
+       const err = new Error(parsedError.mensaje || "Error desconocido") as any;
+       err.codigo = parsedError.codigo;
+       err.mensaje = parsedError.mensaje;
+       throw err;
+     }
+   }
+
+ }

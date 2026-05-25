@@ -11,12 +11,14 @@ interface ZoneAssignmentPanelProps {
   suggestedZone: string;
   isSaturated: boolean;
   zonaCategoria?: string;
+  nombreZonaPrincipal?: string;
 }
 
 export function ZoneAssignmentPanel({
   suggestedZone,
   isSaturated,
   zonaCategoria,
+  nombreZonaPrincipal,
 }: ZoneAssignmentPanelProps) {
   return (
     <section className="rounded-xl border border-border bg-card p-6 shadow-[var(--shadow-card)] lg:col-span-2">
@@ -27,12 +29,12 @@ export function ZoneAssignmentPanel({
         <h2 className="text-sm font-bold text-foreground">Panel de Asignación de Zona</h2>
       </div>
 
-      {isSaturated && (
+      {isSaturated && nombreZonaPrincipal && (
         <Alert className="mb-4 border-warning/30 bg-warning/5">
           <AlertTriangle className="h-4 w-4 text-warning" />
           <AlertTitle>Zona Sugerida Saturada</AlertTitle>
           <AlertDescription>
-            La zona {suggestedZone} ha alcanzado su capacidad. Se sugiere zona de contingencia.
+            La zona {nombreZonaPrincipal} ha alcanzado su capacidad. Se sugiere zona de contingencia: {suggestedZone}.
           </AlertDescription>
         </Alert>
       )}
