@@ -61,8 +61,20 @@ export interface ClassificationSuggestionDTO {
   nombreZona: string;
   codigoZona: string;
   ciudadDestino: string;
+  tipoMercancia?: string;
   tieneCapacidad: boolean;
   mensaje: string;
+}
+
+/**
+ * DTO: Zona de destino disponible
+ */
+export interface DestinationZoneDTO {
+  id: string;
+  nombre: string;
+  codigo: string;
+  categoria?: string;
+  tieneCapacidad?: boolean;
 }
 
 /**
@@ -104,21 +116,22 @@ export class StorageApiService {
    * @param packageId ID del paquete
    * @returns Zona sugerida con información de asignación
    */
-  static async getStorageZoneSuggestion(
-    packageId: string
-  ): Promise<StorageZoneSuggestionDTO> {
-    try {
-      const response = await httpClient.get<StorageZoneSuggestionDTO>(
-        `${this.BASE_URL}/${packageId}/almacenaje/sugerencia`
-      );
-      return response.data;
-    } catch (error) {
-      const parsedError = parseApiError(error);
-      throw new Error(
-        `Error al obtener sugerencia de zona de almacenaje: ${parsedError.mensaje}`
-      );
-    }
-  }
+   static async getStorageZoneSuggestion(
+     packageId: string
+   ): Promise<StorageZoneSuggestionDTO> {
+     try {
+       const response = await httpClient.get<StorageZoneSuggestionDTO>(
+         `${this.BASE_URL}/${packageId}/almacenaje/sugerencia`
+       );
+       return response.data;
+     } catch (error) {
+       const parsedError = parseApiError(error);
+       const err = new Error(parsedError.mensaje || "Error desconocido") as any;
+       err.codigo = parsedError.codigo;
+       err.mensaje = parsedError.mensaje;
+       throw err;
+     }
+   }
 
   /**
    * Asigna una zona de almacenaje a un paquete.
@@ -148,9 +161,10 @@ export class StorageApiService {
       return response.data;
     } catch (error) {
       const parsedError = parseApiError(error);
-      throw new Error(
-        `Error al asignar zona de almacenaje: ${parsedError.mensaje}`
-      );
+      const err = new Error(parsedError.mensaje || "Error desconocido") as any;
+      err.codigo = parsedError.codigo;
+      err.mensaje = parsedError.mensaje;
+      throw err;
     }
   }
 
@@ -171,9 +185,30 @@ export class StorageApiService {
       return response.data;
     } catch (error) {
       const parsedError = parseApiError(error);
-      throw new Error(
-        `Error al obtener sugerencia de clasificación: ${parsedError.mensaje}`
+      const err = new Error(parsedError.mensaje || "Error desconocido") as any;
+      err.codigo = parsedError.codigo;
+      err.mensaje = parsedError.mensaje;
+      throw err;
+    }
+  }
+
+  /**
+   * Obtiene la lista de zonas de destino disponibles.
+   * 
+   * @returns Lista de zonas disponibles
+   */
+  static async getDestinationZones(): Promise<DestinationZoneDTO[]> {
+    try {
+      const response = await httpClient.get<DestinationZoneDTO[]>(
+        `${this.BASE_URL}/clasificacion/zonas`
       );
+      return response.data || [];
+    } catch (error) {
+      const parsedError = parseApiError(error);
+      const err = new Error(parsedError.mensaje || "Error desconocido") as any;
+      err.codigo = parsedError.codigo;
+      err.mensaje = parsedError.mensaje;
+      throw err;
     }
   }
 
@@ -202,9 +237,10 @@ export class StorageApiService {
       return response.data;
     } catch (error) {
       const parsedError = parseApiError(error);
-      throw new Error(
-        `Error al confirmar clasificación: ${parsedError.mensaje}`
-      );
+      const err = new Error(parsedError.mensaje || "Error desconocido") as any;
+      err.codigo = parsedError.codigo;
+      err.mensaje = parsedError.mensaje;
+      throw err;
     }
   }
 }

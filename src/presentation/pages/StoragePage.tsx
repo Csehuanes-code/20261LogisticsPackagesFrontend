@@ -44,12 +44,13 @@ export function StoragePage() {
       setSuggestion(result);
       toast.dismiss();
       toast.success(`Zona sugerida: ${result.nombreZona}`);
-    } catch (err: any) {
-      const errorMsg = err.message || "Error al buscar el paquete";
-      setError(errorMsg);
-      toast.dismiss();
-      toast.error(errorMsg);
-    } finally {
+     } catch (err: any) {
+       const errorMsg = err.message || "Error al buscar el paquete";
+       const errorCode = err.codigo || "";
+       setError(errorMsg);
+       toast.dismiss();
+       toast.error(errorMsg);
+     } finally {
       setLoadingSearch(false);
     }
   };
@@ -76,19 +77,20 @@ export function StoragePage() {
       }, 1000);
     } catch (err: any) {
       const errorMsg = err.message || "Error al confirmar almacenaje";
+      const errorCode = err.codigo || "";
       setError(errorMsg);
       toast.dismiss();
       
-      // Manejo de errores específicos
-      if (errorMsg.includes("ZONA_SATURADA")) {
+      // Manejo de errores específicos basado en el código
+      if (errorCode === "ZONA_SATURADA") {
         toast.error("Zona saturada", {
           description: "Se debe usar una zona de contingencia. Intenta nuevamente.",
         });
-      } else if (errorMsg.includes("ZONA_NO_APTA")) {
+      } else if (errorCode === "ZONA_NO_APTA") {
         toast.error("Zona no apta", {
           description: "La zona seleccionada no es compatible con este tipo de mercancía.",
         });
-      } else if (errorMsg.includes("CONFLICTO_CONCURRENCIA")) {
+      } else if (errorCode === "CONFLICTO_CONCURRENCIA") {
         toast.error("Conflicto de concurrencia", {
           description: "Paquete ya procesado, intenta nuevamente.",
         });

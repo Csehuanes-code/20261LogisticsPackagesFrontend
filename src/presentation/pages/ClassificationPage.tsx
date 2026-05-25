@@ -12,13 +12,32 @@ import { StorageApiService, ClassificationSuggestionDTO } from "@/infrastructure
 
 export function ClassificationPage() {
   const search = useSearch({ from: "/clasificacion" });
-  const paqueteId = (search as any)?.paqueteId;
+  // search ya está tipado por validateSearch de la ruta
+  const paqueteId = (search as Record<string, any>).paqueteId as string | undefined;
   
   const [isLoading, setIsLoading] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [suggestion, setSuggestion] = useState<ClassificationSuggestionDTO | null>(null);
+  const [availableZones, setAvailableZones] = useState<any[]>([]);
+
+  useEffect(() => {
+    // Cargar zonas disponibles
+    const loadZones = async () => {
+      try {
+        const zones = await StorageApiService.getDestinationZones();
+        if (zones) {
+          setAvailableZones(zones);
+        }
+      } catch (err) {
+        console.warn("No se pudieron cargar las zonas disponibles", err);
+        // Usar zonas vacías como fallback
+        setAvailableZones([]);
+      }
+    };
+    loadZones();
+  }, []);
 
   useEffect(() => {
     if (!paqueteId) {
@@ -57,6 +76,11 @@ export function ClassificationPage() {
       toast.error("No hay zona sugerida disponible");
       return;
     }
+    
+    if (!paqueteId) {
+      toast.error("ID del paquete no disponible");
+      return;
+    }
 
     setIsConfirming(true);
     toast.loading("Confirmando clasificación y actualizando estado...");
@@ -70,24 +94,25 @@ export function ClassificationPage() {
       });
       
       setIsConfirmed(true);
-    } catch (err: any) {
-      const errorMsg = err.message || "Error al confirmar clasificación";
-      setError(errorMsg);
-      toast.dismiss();
-      
-      // Manejo de errores específicos
-      if (errorMsg.includes("ZONA_NO_APTA")) {
-        toast.error("Zona no apta", {
-          description: "La zona seleccionada no es compatible con este tipo de mercancía.",
-        });
-      } else if (errorMsg.includes("ZONA_DESTINO_SATURADA")) {
-        toast.error("Zona saturada", {
-          description: "La zona de destino ha alcanzado su capacidad máxima.",
-        });
-      } else {
-        toast.error(errorMsg);
-      }
-    } finally {
+     } catch (err: any) {
+       const errorMsg = err.message || "Error al confirmar clasificación";
+       const errorCode = err.codigo || "";
+       setError(errorMsg);
+       toast.dismiss();
+       
+       // Manejo de errores específicos basado en el código
+       if (errorCode === "ZONA_NO_APTA") {
+         toast.error("Zona no apta", {
+           description: "La zona seleccionada no es compatible con este tipo de mercancía.",
+         });
+       } else if (errorCode === "ZONA_DESTINO_SATURADA") {
+         toast.error("Zona saturada", {
+           description: "La zona de destino ha alcanzado su capacidad máxima.",
+         });
+       } else {
+         toast.error(errorMsg);
+       }
+     } finally {
       setIsConfirming(false);
     }
   };
@@ -101,7 +126,7 @@ export function ClassificationPage() {
       >
         <main className="mx-auto max-w-4xl px-6 py-8">
           <BreadcrumbNav
-            items={[{ label: "Gestión de Ingreso", to: "/" }, { label: "Clasificación" }]}
+            items={[{ label: "Gestión de Ingreso", to: "/gestion" }, { label: "Clasificación" }]}
           />
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -201,7 +226,11 @@ export function ClassificationPage() {
                 </div>
               </section>
             </div>
-            <DestinationZoneList confirmed={isConfirmed} />
+            <DestinationZoneList 
+              zones={availableZones}
+              suggestedZoneId={suggestion.zonaDestinoId}
+              confirmed={isConfirmed}
+            />
           </div>
         )}
 
