@@ -11,6 +11,7 @@ export interface ReportNoveltyInput {
   origin: NoveltyOrigin;
   reportedBy: string;
   evidence?: string;
+  evidenceFile?: File;
 }
 
 export interface NotifyNoveltyInput {
@@ -48,6 +49,7 @@ export class ManageNoveltyUseCase {
       traceability,
       new Date(),
       undefined,
+      input.evidenceFile,
     );
 
     await this.noveltyRepo.save(novelty);

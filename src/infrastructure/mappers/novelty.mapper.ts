@@ -32,9 +32,6 @@ export interface BackendNovedadResponseDTO {
 const DOMAIN_TO_BACKEND_NOVELTY_TYPE: Record<string, string> = {
   danado: "DAÑADO",
   extraviado: "EXTRAVIADO",
-  devolucion: "DAÑADO",
-  entregado: "DAÑADO",
-  "en-transito": "DAÑADO",
 };
 
 const BACKEND_TO_DOMAIN_NOVELTY_TYPE: Record<string, NoveltyType> = {
@@ -57,6 +54,44 @@ export class NoveltyMapper {
       dto.traceability as TraceabilityEntry[],
       new Date(dto.createdAt),
       dto.closedAt ? new Date(dto.closedAt) : undefined,
+    );
+  }
+
+  /**
+   * Convierte un HistorialEstadoItemDto (del backend) a Novelty del dominio.
+   * Usado para listar todas las novedades desde GET /api/novedades.
+   */
+  static fromHistorialItemDto(dto: any): Novelty {
+    // Mapear estado a NoveltyType: NOVEDAD_EN_BODEGA_DAÑADO -> DAMAGED
+    const stateToType: Record<string, NoveltyType> = {
+      "NOVEDAD_EN_BODEGA_DAÑADO": NoveltyType.DAMAGED,
+      "NOVEDAD_EN_BODEGA_EXTRAVIADO": NoveltyType.LOST,
+    };
+    
+    const type = stateToType[dto.estadoNuevo] || NoveltyType.DAMAGED;
+    
+    const traceability: TraceabilityEntry[] = [
+      {
+        label: `${dto.tipoNovedad || "Novedad"}`,
+        timestamp: dto.fechaTransicionUtc,
+        hash: `${Math.random().toString(16).slice(2, 6)}...`,
+        state: "alert",
+      },
+    ];
+    
+    return new Novelty(
+      dto.id,
+      type,
+      `Novedad: ${dto.tipoNovedad || "Desconocida"}`,
+      dto.observaciones,
+      NoveltyOrigin.WAREHOUSE,
+      dto.usuarioId,
+      "PENDING",
+      dto.urlEvidencia,
+      dto.paqueteId,
+      traceability,
+      new Date(dto.fechaTransicionUtc),
+      undefined,
     );
   }
 

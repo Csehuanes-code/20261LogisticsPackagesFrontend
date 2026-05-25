@@ -16,7 +16,13 @@ export class NoveltyApiRepository implements NoveltyRepository {
   }
 
   async findAll(): Promise<Novelty[]> {
-    return Array.from(this.localCache.values());
+    try {
+      const response = await api.get<any[]>("/api/paquetes/novedades");
+      return response.data.map((item) => NoveltyMapper.fromHistorialItemDto(item));
+    } catch (error) {
+      console.error("Error al listar novedades:", error);
+      throw new Error("No se pudieron cargar las novedades desde el servidor");
+    }
   }
 
   async save(novelty: Novelty): Promise<void> {
@@ -29,6 +35,11 @@ export class NoveltyApiRepository implements NoveltyRepository {
       formData.append("tipoNovedad", NoveltyMapper.domainTypeToBackend(novelty.type));
       formData.append("observaciones", novelty.description || novelty.title);
       formData.append("usuarioId", novelty.reportedBy);
+      
+      // Incluir el archivo de evidencia si está disponible
+      if (novelty.evidenceFile) {
+        formData.append("evidencia", novelty.evidenceFile);
+      }
 
       await api.post<BackendNovedadResponseDTO>(
         `/api/paquetes/${novelty.packageId}/novedades`,

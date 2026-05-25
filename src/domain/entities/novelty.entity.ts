@@ -24,6 +24,7 @@ export class Novelty {
     readonly traceability: TraceabilityEntry[],
     readonly createdAt: Date,
     readonly closedAt: Date | undefined,
+    readonly evidenceFile?: File,
   ) {}
 
   get priority(): "high" | "medium" | "low" {

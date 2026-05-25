@@ -248,16 +248,16 @@ export function StoragePage() {
                 <FileText className="h-4 w-4" />
                 Reportar Discrepancia Física
               </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="h-12 w-full border-destructive/40 text-destructive hover:bg-destructive/5 hover:text-destructive"
-              >
-                <Link to="/reportar-novedad">
-                  <AlertTriangle className="h-4 w-4" />
-                  Reportar Novedad (Daño/Extra)
-                </Link>
-              </Button>
+               <Button
+                 asChild
+                 variant="outline"
+                 className="h-12 w-full border-destructive/40 text-destructive hover:bg-destructive/5 hover:text-destructive"
+               >
+                 <Link to="/reportar-novedad" search={{ paqueteId: suggestion.paqueteId }}>
+                   <AlertTriangle className="h-4 w-4" />
+                   Reportar Novedad (Daño/Extra)
+                 </Link>
+               </Button>
 
               <CapacitySection
                 pesoActualKg={suggestion.pesoActualKg}

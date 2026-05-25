@@ -1,6 +1,7 @@
-import { AlertTriangle, Clock, CheckCircle2, XCircle, Paperclip } from "lucide-react";
+import { AlertTriangle, Paperclip } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Novelty } from "@/domain/entities/novelty.entity";
+import { VisorNovedades } from "./VisorNovedades";
 
 interface NoveltyDetailProps {
   novelty: Novelty;
@@ -51,51 +52,23 @@ export function NoveltyDetail({ novelty }: NoveltyDetailProps) {
         </div>
       )}
 
-      {novelty.evidence && (
-        <div className="mt-4 rounded-lg border border-border bg-background p-3">
-          <p className="mb-2 text-xs font-bold text-muted-foreground">Evidencia Adjunta</p>
-          <a
-            href="#"
-            className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
-          >
-            <Paperclip className="h-4 w-4" />
-            {novelty.evidence}
-          </a>
-        </div>
-      )}
+       {novelty.evidence && (
+         <div className="mt-4 rounded-lg border border-border bg-background p-3">
+           <p className="mb-2 text-xs font-bold text-muted-foreground">Evidencia Adjunta</p>
+           <a
+             href="#"
+             className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+           >
+             <Paperclip className="h-4 w-4" />
+             {novelty.evidence}
+           </a>
+         </div>
+       )}
 
-      <div className="mt-6">
-        <div className="mb-4 flex items-center gap-2">
-          <Clock className="h-4 w-4 text-primary" />
-          <h3 className="text-sm font-bold text-foreground">Trazabilidad</h3>
-        </div>
-
-        <ol className="relative space-y-5 border-l-2 border-dashed border-border pl-6">
-          {novelty.traceability.map((step) => (
-            <li key={step.hash} className="relative">
-              <span
-                className={`absolute -left-[33px] top-1 flex h-4 w-4 items-center justify-center rounded-full ${
-                  step.state === "alert" ? "bg-destructive" : "bg-success"
-                }`}
-              >
-                {step.state === "alert" ? (
-                  <XCircle className="h-3 w-3 text-destructive-foreground" />
-                ) : (
-                  <CheckCircle2 className="h-3 w-3 text-success-foreground" />
-                )}
-              </span>
-              <p
-                className={`text-sm font-bold ${step.state === "alert" ? "text-destructive" : "text-foreground"}`}
-              >
-                {step.label}
-              </p>
-              <p className="text-[11px] italic text-muted-foreground">
-                {step.timestamp} | Hash: {step.hash}
-              </p>
-            </li>
-          ))}
-        </ol>
-      </div>
+       {/* MOD1-UC-007: Historial inmutable de transiciones desde el backend */}
+       <div className="mt-6">
+         <VisorNovedades paqueteId={novelty.packageId} />
+       </div>
     </div>
   );
 }
