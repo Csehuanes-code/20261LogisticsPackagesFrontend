@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AlertTriangle, ChevronRight } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { AppLayout } from "@/components/AppLayout";
@@ -10,8 +10,6 @@ import { useNovelty } from "../hooks/use-novelty";
 import { Novelty } from "@/domain/entities/novelty.entity";
 import { toast } from "sonner";
 
-const noveltiesMock: Novelty[] = [];
-
 export function NoveltyControlPage() {
   const { findAll, notify, close } = useNovelty();
   const [novelties, setNovelties] = useState<Novelty[]>([]);
@@ -19,14 +17,20 @@ export function NoveltyControlPage() {
   const [isNotifying, setIsNotifying] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [isClosed, setIsClosed] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useState(() => {
+  useEffect(() => {
     findAll()
-      .then(setNovelties)
       .then((list) => {
+        setNovelties(list);
         if (list.length > 0) setSelectedNovedad(list[0]);
-      });
-  });
+      })
+      .catch((error) => {
+        console.error("Error cargando novedades:", error);
+        toast.error("No se pudieron cargar las novedades");
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
 
   const handleNotify = () => {
     if (!selectedNovedad) return;
@@ -57,7 +61,8 @@ export function NoveltyControlPage() {
     toast.info("Redirigiendo a la pantalla de clasificación...");
   };
 
-  if (!selectedNovedad) {
+  // Estado: Cargando
+  if (isLoading) {
     return (
       <AppLayout
         icon={<AlertTriangle className="h-5 w-5 text-destructive-foreground" />}
@@ -71,6 +76,35 @@ export function NoveltyControlPage() {
       </AppLayout>
     );
   }
+
+  // Estado: Sin novedades
+  if (novelties.length === 0) {
+    return (
+      <AppLayout
+        icon={<AlertTriangle className="h-5 w-5 text-destructive-foreground" />}
+        title="HERMES EXPRESS"
+        subtitle="Control de Novedades"
+        iconBgClass="bg-gradient-to-br from-destructive to-warning shadow-[var(--shadow-elevated)]"
+      >
+        <main className="mx-auto max-w-7xl px-6 py-8">
+          <BreadcrumbNav items={[{ label: "Control de Novedades" }]} />
+          <h1 className="mb-8 text-3xl font-bold tracking-tight text-foreground">
+            Control de Novedades
+          </h1>
+          <div className="rounded-lg border border-border bg-muted/30 p-12 text-center">
+            <AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground" />
+            <p className="mt-4 text-lg font-semibold text-foreground">No hay novedades activas</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Las novedades registradas aparecerán aquí para su revisión y cierre.
+            </p>
+          </div>
+        </main>
+      </AppLayout>
+    );
+  }
+
+  // En este punto: isLoading=false && novelties.length > 0
+  const activeNovedad = selectedNovedad || novelties[0];
 
   return (
     <AppLayout
@@ -90,19 +124,19 @@ export function NoveltyControlPage() {
           <aside className="lg:col-span-3">
             <NoveltyInbox
               novelties={novelties}
-              selectedId={selectedNovedad.id}
+              selectedId={activeNovedad.id}
               onSelect={setSelectedNovedad}
               onResetClosed={() => setIsClosed(false)}
             />
           </aside>
 
           <section className="lg:col-span-5">
-            <NoveltyDetail novelty={selectedNovedad} />
+            <NoveltyDetail novelty={activeNovedad} />
           </section>
 
           <aside className="space-y-4 lg:col-span-4">
             <ActionPanel
-              novelty={selectedNovedad}
+              novelty={activeNovedad}
               isClosed={isClosed}
               isNotifying={isNotifying}
               isClosing={isClosing}
