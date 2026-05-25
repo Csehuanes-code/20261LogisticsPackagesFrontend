@@ -59,11 +59,6 @@ export function AdmissionPage() {
       },
       valorDeclarado: 0,
       metodoPago: PaymentMethod.PREPAGO,
-      indicadorFormaIrregular: false,
-      peso: 1.0,
-      largo: 1.0,
-      ancho: 1.0,
-      alto: 1.0,
     },
   });
 
@@ -171,14 +166,8 @@ export function AdmissionPage() {
                 </Button>
               </div>
             </div>
-          </div>
-          {/* Campos ocultos para dimensiones mínimas - Aseguran tipos numéricos para el backend */}
-          <input type="hidden" value="false" {...register("indicadorFormaIrregular")} />
-          <input type="hidden" value={1.0} {...register("peso", { valueAsNumber: true })} />
-          <input type="hidden" value={1.0} {...register("largo", { valueAsNumber: true })} />
-          <input type="hidden" value={1.0} {...register("ancho", { valueAsNumber: true })} />
-          <input type="hidden" value={1.0} {...register("alto", { valueAsNumber: true })} />
-        </form>
+           </div>
+         </form>
 
         <Alert className="mt-8">
           <Info className="h-4 w-4" />
