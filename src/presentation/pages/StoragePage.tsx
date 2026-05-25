@@ -10,7 +10,7 @@ import {
   LoaderCircle,
   AlertCircle,
 } from "lucide-react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -20,14 +20,35 @@ import { ZoneAssignmentPanel } from "../components/storage/ZoneAssignmentPanel";
 import { CapacitySection } from "../components/storage/CapacitySection";
 import { toast } from "sonner";
 import { StorageApiService, StorageZoneSuggestionDTO } from "@/infrastructure/http/storage-api.service";
+import { useAdmission } from "@/lib/admission-context";
+import { useCases } from "@/lib/di";
 
 export function StoragePage() {
   const navigate = useNavigate();
+  const searchParams = useSearch({ from: "/gestion" });
+  const {
+    setPaqueteId: setContextPaqueteId,
+    setZonaId: setContextZonaId,
+  } = useAdmission();
   const [packageId, setPackageId] = useState("");
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [suggestion, setSuggestion] = useState<StorageZoneSuggestionDTO | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Auto-buscar si viene paqueteId en search params
+  useEffect(() => {
+    if (searchParams.paqueteId && !packageId) {
+      setPackageId(searchParams.paqueteId);
+    }
+  }, [searchParams.paqueteId, packageId]);
+
+  // Auto-disparar búsqueda cuando se completa el packageId desde URL
+  useEffect(() => {
+    if (packageId && !suggestion) {
+      handleSearch();
+    }
+  }, [packageId, suggestion]);
 
   const handleSearch = async () => {
     if (!packageId.trim()) {
@@ -106,6 +127,13 @@ export function StoragePage() {
     if (e.key === "Enter") {
       handleSearch();
     }
+  };
+
+  const handleGoToDiscrepancy = () => {
+    if (!suggestion) return;
+    setContextPaqueteId(suggestion.paqueteId);
+    setContextZonaId(suggestion.zonaId);
+    navigate({ to: "/discrepancia" });
   };
 
   return (
@@ -194,6 +222,7 @@ export function StoragePage() {
               suggestedZone={suggestion.nombreZona}
               isSaturated={suggestion.zonaSaturada || false}
               zonaCategoria={suggestion.categoria}
+              nombreZonaPrincipal={suggestion.nombreZonaPrincipal}
             />
 
             <div className="space-y-3">
@@ -210,11 +239,14 @@ export function StoragePage() {
                 )}
                 {isConfirming ? "Confirmando..." : "Confirmar Almacenaje"}
               </Button>
-              <Button asChild variant="outline" className="h-12 w-full">
-                <Link to="/discrepancia">
-                  <FileText className="h-4 w-4" />
-                  Reportar Discrepancia Física
-                </Link>
+              <Button
+                variant="outline"
+                className="h-12 w-full"
+                onClick={handleGoToDiscrepancy}
+                disabled={!suggestion}
+              >
+                <FileText className="h-4 w-4" />
+                Reportar Discrepancia Física
               </Button>
               <Button
                 asChild

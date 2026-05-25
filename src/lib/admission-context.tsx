@@ -17,6 +17,7 @@ interface AdmissionContextType {
   estadoGps: "PENDIENTE" | "RESUELTO" | null;
   estado: string | null;
   sedeId: string | null;
+  zonaId: string | null;
   remitenteNombre: string | null;
   destinatarioNombre: string | null;
   direccionDestinoTexto: string | null;
@@ -26,6 +27,7 @@ interface AdmissionContextType {
   setEstadoGps: (estado: "PENDIENTE" | "RESUELTO") => void;
   setEstado: (estado: string) => void;
   setSedeId: (id: string) => void;
+  setZonaId: (id: string) => void;
   setRemitenteNombre: (nombre: string) => void;
   setDestinatarioNombre: (nombre: string) => void;
   setDireccionDestinoTexto: (direccion: string) => void;
@@ -45,6 +47,7 @@ export function AdmissionProvider({ children }: { children: ReactNode }) {
   );
   const [estado, setEstado] = useState<string | null>(null);
   const [sedeId, setSedeId] = useState<string | null>(null);
+  const [zonaId, setZonaId] = useState<string | null>(null);
   const [remitenteNombre, setRemitenteNombre] = useState<string | null>(null);
   const [destinatarioNombre, setDestinatarioNombre] = useState<string | null>(null);
   const [direccionDestinoTexto, setDireccionDestinoTexto] = useState<string | null>(null);
@@ -56,6 +59,7 @@ export function AdmissionProvider({ children }: { children: ReactNode }) {
     setEstadoGps(null);
     setEstado(null);
     setSedeId(null);
+    setZonaId(null);
     setRemitenteNombre(null);
     setDestinatarioNombre(null);
     setDireccionDestinoTexto(null);
@@ -70,6 +74,7 @@ export function AdmissionProvider({ children }: { children: ReactNode }) {
         estadoGps,
         estado,
         sedeId,
+        zonaId,
         remitenteNombre,
         destinatarioNombre,
         direccionDestinoTexto,
@@ -79,6 +84,7 @@ export function AdmissionProvider({ children }: { children: ReactNode }) {
         setEstadoGps,
         setEstado,
         setSedeId,
+        setZonaId,
         setRemitenteNombre,
         setDestinatarioNombre,
         setDireccionDestinoTexto,
