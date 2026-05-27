@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { Package, Truck, Info, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Package, Truck, Info, Loader2, AlertCircle } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -13,6 +13,7 @@ import { CoverageMap } from "../components/admission/CoverageMap";
 import { ShippingInfoSection } from "../components/admission/ShippingInfoSection";
 import { useAdmission } from "@/lib/admission-context";
 import { AdmisionApiService } from "@/infrastructure/http/admission-api.service";
+import { SedeApiService, type SedeResponseDto } from "@/infrastructure/http/sede-api.service";
 import { DocumentType } from "@/domain/enums/document-type.enum";
 import { PaymentMethod } from "@/domain/enums/payment-method.enum";
 
@@ -33,11 +34,39 @@ export function AdmissionPage() {
   } = useAdmission();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sedes, setSedes] = useState<SedeResponseDto[]>([]);
+  const [sedesLoading, setSedesLoading] = useState(true);
+  const [sedesError, setSedesError] = useState(false);
+
+  // FE-3.3: Cargar sedes disponibles al montar el componente
+  useEffect(() => {
+    const cargarSedes = async () => {
+      try {
+        setSedesLoading(true);
+        setSedesError(false);
+        const sedesData = await SedeApiService.listarSedes();
+        setSedes(sedesData);
+        
+        // Si no hay sedes, mostrar un error
+        if (sedesData.length === 0) {
+          toast.error("No hay sedes disponibles en el sistema");
+        }
+      } catch (error: any) {
+        console.error("Error al cargar sedes:", error);
+        setSedesError(true);
+        toast.error("Error al cargar las sedes disponibles");
+      } finally {
+        setSedesLoading(false);
+      }
+    };
+    
+    cargarSedes();
+  }, []);
 
   // FE-2: Configurar formulario con react-hook-form
-  const { handleSubmit, control, register } = useForm({
+  const { handleSubmit, control, register, watch } = useForm({
     defaultValues: {
-      sedeId: "550e8400-e29b-41d4-a716-446655440001", // Fixed como por instrucciones
+      sedeId: "",
       remitente: {
         tipoDocumento: DocumentType.CEDULA_CIUDADANIA,
         numeroDocumento: "",
@@ -134,22 +163,69 @@ export function AdmissionPage() {
               <SenderForm control={control as any} />
               <RecipientForm control={control as any} />
             </div>
-            <div className="space-y-6 lg:col-span-2">
-               {/* FE-5: Pasar props reales de GPS al CoverageMap (contingencia GPS) */}
-               <CoverageMap 
-                 estadoGps={estadoGps ?? undefined}
-                 paqueteId={paqueteId ?? undefined}
-                 onCoordinatesUpdate={(lat, lon) => {
-                   // Callback: Cuando se actualizan las coordenadas manualmente
-                   setEstadoGps("RESUELTO");
-                   // Navegar automáticamente a pesaje después de actualizar GPS
-                   toast.success("📍 Coordenadas guardadas. Continuando al pesaje...");
-                   setTimeout(() => {
-                     navigate({ to: "/pesaje" });
-                   }, 1000);
-                 }}
-               />
-              <ShippingInfoSection control={control as any} />
+             <div className="space-y-6 lg:col-span-2">
+                {/* FE-3.3: Selector dinámico de sedes */}
+                {sedesLoading ? (
+                  <div className="rounded-lg border border-border bg-muted/30 p-4 text-center">
+                    <p className="text-sm text-muted-foreground">Cargando sedes...</p>
+                  </div>
+                ) : sedesError ? (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Error de conexión</AlertTitle>
+                    <AlertDescription>
+                      No se pudo cargar las sedes. Verifique la conexión e intente nuevamente.
+                    </AlertDescription>
+                  </Alert>
+                ) : sedes.length === 0 ? (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Sin sedes disponibles</AlertTitle>
+                    <AlertDescription>
+                      No hay sedes disponibles en el sistema. Por favor contacte al administrador.
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">Sede de Operación</label>
+                    <Controller
+                      name="sedeId"
+                      control={control}
+                      render={({ field }) => (
+                        <select
+                          {...field}
+                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <option value="">Seleccione una sede de operación...</option>
+                          {sedes.map((sede) => (
+                            <option key={sede.id} value={sede.id}>
+                              {sede.nombre} ({sede.ciudad}, {sede.departamento})
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Seleccione la sede desde donde se despachará el paquete
+                    </p>
+                  </div>
+                )}
+                
+                {/* FE-5: Pasar props reales de GPS al CoverageMap (contingencia GPS) */}
+                <CoverageMap 
+                  estadoGps={estadoGps ?? undefined}
+                  paqueteId={paqueteId ?? undefined}
+                  onCoordinatesUpdate={(lat, lon) => {
+                    // Callback: Cuando se actualizan las coordenadas manualmente
+                    setEstadoGps("RESUELTO");
+                    // Navegar automáticamente a pesaje después de actualizar GPS
+                    toast.success("📍 Coordenadas guardadas. Continuando al pesaje...");
+                    setTimeout(() => {
+                      navigate({ to: "/pesaje" });
+                    }, 1000);
+                  }}
+                />
+               <ShippingInfoSection control={control as any} />
               <div className="space-y-3">
                 <Button
                   type="submit"
