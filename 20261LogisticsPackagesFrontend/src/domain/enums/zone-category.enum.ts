@@ -1,6 +1,0 @@
-export enum ZoneCategory {
-  NORMAL = "NORMAL",
-  DELICATE = "DELICADA",
-  HIGH_RISK = "ALTO_RIESGO",
-  RETENCION = "RETENCION",
-}
