@@ -1,10 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Package, Truck, Info, Loader2 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { AppLayout } from "@/components/AppLayout";
 import { BreadcrumbNav } from "../components/shared/BreadcrumbNav";
 import { SenderForm } from "../components/admission/SenderForm";
@@ -13,6 +20,7 @@ import { CoverageMap } from "../components/admission/CoverageMap";
 import { ShippingInfoSection } from "../components/admission/ShippingInfoSection";
 import { useAdmission } from "@/lib/admission-context";
 import { AdmisionApiService } from "@/infrastructure/http/admission-api.service";
+import { SedesApiService, SedeDTO } from "@/infrastructure/http/sedes-api.service";
 import { DocumentType } from "@/domain/enums/document-type.enum";
 import { PaymentMethod } from "@/domain/enums/payment-method.enum";
 
@@ -33,11 +41,30 @@ export function AdmissionPage() {
   } = useAdmission();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sedes, setSedes] = useState<SedeDTO[]>([]);
+  const [loadingSedes, setLoadingSedes] = useState(true);
+  const [selectedSedeId, setSelectedSedeId] = useState<string>("");
+
+  // FT-1: Cargar sedes disponibles al montar el componente
+  useEffect(() => {
+    const cargarSedes = async () => {
+      try {
+        const sedesData = await SedesApiService.obtenerSedes();
+        setSedes(sedesData);
+        setLoadingSedes(false);
+      } catch (error) {
+        console.error("Error al cargar sedes:", error);
+        toast.error("No se pudieron cargar las sedes disponibles");
+        setLoadingSedes(false);
+      }
+    };
+    cargarSedes();
+  }, []);
 
   // FE-2: Configurar formulario con react-hook-form
   const { handleSubmit, control, register } = useForm({
     defaultValues: {
-      sedeId: "550e8400-e29b-41d4-a716-446655440001", // Fixed como por instrucciones
+      sedeId: selectedSedeId || "550e8400-e29b-41d4-a716-446655440001", // FT-1: Dinámico o fallback
       remitente: {
         tipoDocumento: DocumentType.CEDULA_CIUDADANIA,
         numeroDocumento: "",
@@ -131,6 +158,34 @@ export function AdmissionPage() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid gap-6 lg:grid-cols-5">
             <div className="space-y-6 lg:col-span-3">
+              {/* FT-1: Selector de Sedes */}
+              {!loadingSedes && sedes.length > 0 && (
+                <section className="rounded-xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+                  <div className="mb-5 flex items-center gap-2.5">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary">
+                      📍
+                    </span>
+                    <h2 className="text-sm font-bold text-foreground">Sede de Origen</h2>
+                  </div>
+                  <Select value={selectedSedeId} onValueChange={setSelectedSedeId}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Seleccione una sede" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sedes.map((sede) => (
+                        <SelectItem key={sede.id} value={sede.id}>
+                          {sede.nombre} {sede.ciudad && `(${sede.ciudad})`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <input
+                    type="hidden"
+                    {...register("sedeId")}
+                    value={selectedSedeId}
+                  />
+                </section>
+              )}
               <SenderForm control={control as any} />
               <RecipientForm control={control as any} />
             </div>

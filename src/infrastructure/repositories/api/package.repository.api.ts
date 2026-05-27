@@ -40,34 +40,14 @@ export class PackageApiRepository implements PackageRepository {
 
     if (!isValidUUID(pkg.id)) return;
 
-    if (pkg.weight && pkg.dimensions && !this.ships.get(pkg.id)) {
-      this.ships.set(pkg.id, true);
+    // FT-1: El registro de admisión ahora se maneja dinámicamente desde AdmissionPage.tsx
+    // Consulte SedesApiService para obtener sedes disponibles y enviar sedeId dinámico
+    // Este código legacy queda inactivo pero se mantiene para compatibilidad
 
-      const sedeId = "550e8400-e29b-41d4-a716-446655440001";
-      const admissionData = PackageMapper.domainToAdmissionRequest(pkg, sedeId);
 
-      try {
-        await api.post("/api/paquetes/admision", admissionData);
-      } catch {
-        this.ships.set(pkg.id, false);
-        throw new Error("Error al registrar admisión en el servidor");
-      }
-    }
+    // FT-1: El pesaje ahora se maneja desde WeighingPage.tsx directamente
+    // Este código legacy queda inactivo pero se mantiene para compatibilidad
 
-    if (pkg.weight && pkg.dimensions && pkg.status === PackageStatus.WEIGHED) {
-      try {
-        await api.post("/api/paquetes/pesaje", {
-          paqueteId: pkg.id,
-          pesoKg: pkg.weight.value,
-          largoCm: pkg.dimensions.lengthCm,
-          anchoCm: pkg.dimensions.widthCm,
-          altoCm: pkg.dimensions.heightCm,
-          indicadorFormaIrregular: false,
-        });
-      } catch {
-        throw new Error("Error al procesar pesaje en el servidor");
-      }
-    }
   }
 
   async findAll(): Promise<Package[]> {
