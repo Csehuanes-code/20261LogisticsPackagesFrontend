@@ -1,0 +1,13 @@
+# pack-refs with: peeled fully-peeled sorted 
+21d7595e7ac2413f93e5e62e2ce3b4e7d1ce8ac3 refs/remotes/origin/develop
+d074dfc73c1b68bdc86ecfc14188f3253c727d53 refs/remotes/origin/feature/Plan1
+97bdf449e6b94c4aa9dae494da04c577c3b8629c refs/remotes/origin/feature/admission-flow-clean
+c1ce74236b10d158ed28b3bb4bc8b60e5dd127c5 refs/remotes/origin/feature/api-integration
+e57535b1509c831366020cc2643045142188bb9a refs/remotes/origin/feature/integracion-almacenaje-clasificacion
+20c2a6728b1ffa785a8dde0dec81b6450630b5a4 refs/remotes/origin/feature/integracion-uc007
+77f5eb7b8263289df335e7a6b1791249ddd264de refs/remotes/origin/feature/restructure-project-layers
+d81f937e27ddda7a096f8c7f07b6502f13d27eee refs/remotes/origin/feature/scaffolding
+416b322ee860ad08d91c05d662f2053b3d4bcd23 refs/remotes/origin/feature/storage-classification-integration
+3ca2e1fae888b48b573b1c2d8524a11f21cf9a71 refs/remotes/origin/fix/clasificacion-remove-dangerous-type-validation
+670a825fceefc24071b14d1372aed7768d960ec0 refs/remotes/origin/fix/discrepancia-ui-flujo
+a47a9cd8add623f77859168ff2999546e9939e40 refs/remotes/origin/main
