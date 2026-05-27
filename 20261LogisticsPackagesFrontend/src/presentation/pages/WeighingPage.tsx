@@ -22,7 +22,6 @@ import { toast } from "sonner";
 import { MerchandiseType } from "@/domain/enums/merchandise-type.enum";
 import { useAdmission } from "@/lib/admission-context";
 import { WeighingApiService } from "@/infrastructure/http/weighing-api.service";
-import { RutaApiService } from "@/infrastructure/http/ruta-api.service";
 
 // Constante para cálculo de peso volumétrico
 const DENSITY_FACTOR = 250;
@@ -96,72 +95,20 @@ export function WeighingPage() {
   }, [pesoReal, pesoVolumetrico]);
 
    // FE-3: Implementar llamada real al backend
-    const handleConfirm = async () => {
-      // Validar que todos los campos estén completos
-      if (!pesoReal || isNaN(pesoReal) || pesoReal <= 0) {
-        toast.error("❌ Por favor ingrese un peso válido");
-        return;
-      }
-      if (!lengthCm || isNaN(lengthCm) || !widthCm || isNaN(widthCm) || !heightCm || isNaN(heightCm)) {
-        toast.error("❌ Por favor complete todas las dimensiones");
-        return;
-      }
+   const handleConfirm = async () => {
+     // Validar que todos los campos estén completos
+     if (!pesoReal || isNaN(pesoReal) || pesoReal <= 0) {
+       toast.error("❌ Por favor ingrese un peso válido");
+       return;
+     }
+     if (!lengthCm || isNaN(lengthCm) || !widthCm || isNaN(widthCm) || !heightCm || isNaN(heightCm)) {
+       toast.error("❌ Por favor complete todas las dimensiones");
+       return;
+     }
 
-      setIsSubmitting(true);
-      try {
-        // FE-3: Llamar a WeighingApiService.weighPackage()
-        const response = await WeighingApiService.weighPackage({
-          paqueteId,
-          peso: pesoReal,
-          largoCm: lengthCm,
-          anchoCm: widthCm,
-          altoCm: heightCm,
-          tipoMercancia: merch,
-          formaIrregular: formaIrregular,
-        });
-
-        // FE-3: Capturar alertas del backend
-        if (response.alertas && response.alertas.length > 0) {
-          setBackendAlerts(response.alertas);
-          setShowAlertsDialog(true);
-          toast.warning("⚠️ Se detectaron alertas en el pesaje. Por favor revise.");
-          return; // No continuar hasta que el usuario confirme
-        }
-
-        // Si no hay alertas, proceder directamente
-        setPrecioEnvio(response.precioEnvio);
-        toast.success(`✅ Pesaje completado. Precio: $${response.precioEnvio}`);
-
-        // Feature 3.1-c: Solicitar ruta antes de navegar a gestion
-        try {
-          await RutaApiService.solicitarRuta(paqueteId);
-          toast.success("✅ Solicitud de ruta enviada al Módulo 2");
-        } catch (rutaError) {
-          console.error("Error al solicitar ruta:", rutaError);
-          toast.warning("⚠️ Pesaje guardado pero hubo un error al solicitar la ruta");
-        }
-
-        setTimeout(() => {
-          navigate({ to: "/gestion" });
-        }, 1500);
-      } catch (error: any) {
-        let errorMsg = error.message || "Error desconocido";
-        // Mejorar mensaje para errores de validación de peso
-        if (errorMsg.includes("Peso") || errorMsg.includes("peso")) {
-          errorMsg = "❌ Peso fuera de rango permitido (0.01 – 70 kg). Por favor corrija el valor.";
-        }
-        toast.error(errorMsg);
-      } finally {
-        setIsSubmitting(false);
-      }
-    };
-
-   // FE-3: Confirmar después de revisar alertas
-   const handleConfirmWithAlerts = async () => {
-     setShowAlertsDialog(false);
-     setIsSubmitting(true);
+    setIsSubmitting(true);
      try {
-       // Reintentar con confirmación explícita
+       // FE-3: Llamar a WeighingApiService.weighPackage()
        const response = await WeighingApiService.weighPackage({
          paqueteId,
          peso: pesoReal,
@@ -172,32 +119,64 @@ export function WeighingPage() {
          formaIrregular: formaIrregular,
        });
 
-        setPrecioEnvio(response.precioEnvio);
-        toast.success(`✅ Pesaje confirmado. Precio: $${response.precioEnvio}`);
-
-        // Feature 3.1-c: Solicitar ruta después de confirmar alertas
-        try {
-          await RutaApiService.solicitarRuta(paqueteId);
-          toast.success("✅ Solicitud de ruta enviada al Módulo 2");
-        } catch (rutaError) {
-          console.error("Error al solicitar ruta:", rutaError);
-          toast.warning("⚠️ Pesaje guardado pero hubo un error al solicitar la ruta");
-        }
-
-        setTimeout(() => {
-          navigate({ to: "/gestion" });
-        }, 1500);
-      } catch (error: any) {
-        let errorMsg = error.message || "Error desconocido";
-        // Mejorar mensaje para errores de validación de peso
-        if (errorMsg.includes("Peso") || errorMsg.includes("peso")) {
-          errorMsg = "❌ Peso fuera de rango permitido (0.01 – 70 kg). Por favor corrija el valor.";
-        }
-        toast.error(errorMsg);
-      } finally {
-        setIsSubmitting(false);
+      // FE-3: Capturar alertas del backend
+      if (response.alertas && response.alertas.length > 0) {
+        setBackendAlerts(response.alertas);
+        setShowAlertsDialog(true);
+        toast.warning("⚠️ Se detectaron alertas en el pesaje. Por favor revise.");
+        return; // No continuar hasta que el usuario confirme
       }
-    };
+
+       // Si no hay alertas, proceder directamente
+       setPrecioEnvio(response.precioEnvio);
+       toast.success(`✅ Pesaje completado. Precio: $${response.precioEnvio}`);
+       setTimeout(() => {
+         navigate({ to: "/gestion" });
+       }, 1500);
+     } catch (error: any) {
+       let errorMsg = error.message || "Error desconocido";
+       // Mejorar mensaje para errores de validación de peso
+       if (errorMsg.includes("Peso") || errorMsg.includes("peso")) {
+         errorMsg = "❌ Peso fuera de rango permitido (0.01 – 70 kg). Por favor corrija el valor.";
+       }
+       toast.error(errorMsg);
+     } finally {
+       setIsSubmitting(false);
+     }
+   };
+
+  // FE-3: Confirmar después de revisar alertas
+  const handleConfirmWithAlerts = async () => {
+    setShowAlertsDialog(false);
+    setIsSubmitting(true);
+    try {
+      // Reintentar con confirmación explícita
+      const response = await WeighingApiService.weighPackage({
+        paqueteId,
+        peso: pesoReal,
+        largoCm: lengthCm,
+        anchoCm: widthCm,
+        altoCm: heightCm,
+        tipoMercancia: merch,
+        formaIrregular: formaIrregular,
+      });
+
+       setPrecioEnvio(response.precioEnvio);
+       toast.success(`✅ Pesaje confirmado. Precio: $${response.precioEnvio}`);
+       setTimeout(() => {
+         navigate({ to: "/gestion" });
+       }, 1500);
+     } catch (error: any) {
+       let errorMsg = error.message || "Error desconocido";
+       // Mejorar mensaje para errores de validación de peso
+       if (errorMsg.includes("Peso") || errorMsg.includes("peso")) {
+         errorMsg = "❌ Peso fuera de rango permitido (0.01 – 70 kg). Por favor corrija el valor.";
+       }
+       toast.error(errorMsg);
+     } finally {
+       setIsSubmitting(false);
+     }
+   };
 
   return (
     <AppLayout
