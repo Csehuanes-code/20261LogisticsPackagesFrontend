@@ -5,8 +5,13 @@ import { useCases } from "@/lib/di";
 export const Route = createFileRoute("/novedades")({
   component: NoveltyControlPage,
   loader: async () => {
-    const novelties = await useCases.manageNovelty.findAll();
-    return { novelties };
+    try {
+      const novelties = await useCases.manageNovelty.findAll();
+      return { novelties };
+    } catch (error) {
+      console.error("Error loading novelties:", error);
+      return { novelties: [] };
+    }
   },
   head: () => ({
     meta: [

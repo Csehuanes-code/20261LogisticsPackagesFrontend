@@ -57,43 +57,53 @@ export class NoveltyMapper {
     );
   }
 
-  /**
-   * Convierte un HistorialEstadoItemDto (del backend) a Novelty del dominio.
-   * Usado para listar todas las novedades desde GET /api/novedades.
-   */
-  static fromHistorialItemDto(dto: any): Novelty {
-    // Mapear estado a NoveltyType: NOVEDAD_EN_BODEGA_DAÑADO -> DAMAGED
-    const stateToType: Record<string, NoveltyType> = {
-      "NOVEDAD_EN_BODEGA_DAÑADO": NoveltyType.DAMAGED,
-      "NOVEDAD_EN_BODEGA_EXTRAVIADO": NoveltyType.LOST,
-    };
-    
-    const type = stateToType[dto.estadoNuevo] || NoveltyType.DAMAGED;
-    
-    const traceability: TraceabilityEntry[] = [
-      {
-        label: `${dto.tipoNovedad || "Novedad"}`,
-        timestamp: dto.fechaTransicionUtc,
-        hash: `${Math.random().toString(16).slice(2, 6)}...`,
-        state: "alert",
-      },
-    ];
-    
-    return new Novelty(
-      dto.id,
-      type,
-      `Novedad: ${dto.tipoNovedad || "Desconocida"}`,
-      dto.observaciones,
-      NoveltyOrigin.WAREHOUSE,
-      dto.usuarioId,
-      "PENDING",
-      dto.urlEvidencia,
-      dto.paqueteId,
-      traceability,
-      new Date(dto.fechaTransicionUtc),
-      undefined,
-    );
-  }
+   /**
+    * Convierte un HistorialEstadoItemDto (del backend) a Novelty del dominio.
+    * Usado para listar todas las novedades desde GET /api/novedades.
+    * FE-4: Mapea el estado real de la novedad desde backend.
+    */
+   static fromHistorialItemDto(dto: any): Novelty {
+     // Mapear estado a NoveltyType: NOVEDAD_EN_BODEGA_DAÑADO -> DAMAGED
+     const stateToType: Record<string, NoveltyType> = {
+       "NOVEDAD_EN_BODEGA_DAÑADO": NoveltyType.DAMAGED,
+       "NOVEDAD_EN_BODEGA_EXTRAVIADO": NoveltyType.LOST,
+     };
+     
+     const type = stateToType[dto.estadoNuevo] || NoveltyType.DAMAGED;
+     
+     // FE-4: Mapear estadoNovedad del backend (PENDIENTE/NOTIFICADO/CERRADO) a status del frontend
+     const estadoBackend = dto.estadoNovedad || "PENDIENTE";
+     const statusMap: Record<string, "PENDING" | "IN_REVIEW" | "CLOSED"> = {
+       "PENDIENTE": "PENDING",
+       "NOTIFICADO": "IN_REVIEW",
+       "CERRADO": "CLOSED",
+     };
+     const status = statusMap[estadoBackend] || "PENDING";
+     
+     const traceability: TraceabilityEntry[] = [
+       {
+         label: `${dto.tipoNovedad || "Novedad"}`,
+         timestamp: dto.fechaTransicionUtc,
+         hash: `${Math.random().toString(16).slice(2, 6)}...`,
+         state: "alert",
+       },
+     ];
+     
+     return new Novelty(
+       dto.id,
+       type,
+       `Novedad: ${dto.tipoNovedad || "Desconocida"}`,
+       dto.observaciones,
+       NoveltyOrigin.WAREHOUSE,
+       dto.usuarioId,
+       status,
+       dto.urlEvidencia,
+       dto.paqueteId,
+       traceability,
+       new Date(dto.fechaTransicionUtc),
+       undefined,
+     );
+   }
 
   static toDTO(domain: Novelty): NoveltyDTO {
     return {

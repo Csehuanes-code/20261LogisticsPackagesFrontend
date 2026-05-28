@@ -1,4 +1,4 @@
-import { Package, Warehouse, AlertTriangle } from "lucide-react";
+import { Package, Warehouse, AlertTriangle, Truck } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { ModuleCard } from "../components/shared/ModuleCard";
 
@@ -21,7 +21,7 @@ export function HomePage() {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-4">
           <ModuleCard
             to="/admision"
             icon={<Package className="h-6 w-6" />}
@@ -42,6 +42,13 @@ export function HomePage() {
             title="Control de Novedades"
             description="Seguimiento de incidencias, daños y reportes en ruta."
             iconBg="bg-gradient-to-br from-destructive to-warning text-destructive-foreground"
+          />
+          <ModuleCard
+            to="/tracking"
+            icon={<Truck className="h-6 w-6" />}
+            title="Seguimiento de Paquetes"
+            description="Consulta el estado, historial y ubicación de cualquier envío."
+            iconBg="bg-gradient-to-br from-cyan-500 to-blue-600 text-white"
           />
         </div>
       </main>

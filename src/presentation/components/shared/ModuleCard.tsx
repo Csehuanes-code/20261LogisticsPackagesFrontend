@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 
 interface ModuleCardProps {
-  to: "/admision" | "/gestion" | "/novedades" | "/pesaje" | "/discrepancia";
+  to: "/admision" | "/gestion" | "/novedades" | "/pesaje" | "/discrepancia" | "/tracking";
   icon: React.ReactNode;
   title: string;
   description: string;

@@ -2,12 +2,16 @@ import httpClient, { parseApiError } from "../api/http-client";
 
 /**
  * DTO: Respuesta del endpoint GET /api/sedes
+ * Incluye tarifas por sede (pueden ser null para usar tarifas globales)
  */
 export interface SedeDTO {
   id: string;
   nombre: string;
   ciudad: string | null;
   tipo: string | null;
+  tarifaBase: number | null;
+  tarifaPorKg: number | null;
+  tarifaPorKm: number | null;
 }
 
 /**

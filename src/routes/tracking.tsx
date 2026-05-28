@@ -7,7 +7,7 @@ import { useNavigate } from "@tanstack/react-router";
 
 // Validar search params
 const trackingSearchSchema = z.object({
-  paqueteId: z.string().uuid().optional(),
+  paqueteId: z.string().uuid().optional().catch(undefined),
 });
 
 // Guard: Requiere autenticación

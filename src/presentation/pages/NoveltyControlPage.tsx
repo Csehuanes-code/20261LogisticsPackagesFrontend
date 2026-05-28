@@ -9,6 +9,8 @@ import { ActionPanel } from "../components/novelty/ActionPanel";
 import { useNovelty } from "../hooks/use-novelty";
 import { Novelty } from "@/domain/entities/novelty.entity";
 import { toast } from "sonner";
+import api from "@/infrastructure/api/http-client";
+import { parseApiError } from "@/infrastructure/api/http-client";
 
 export function NoveltyControlPage() {
   const { findAll, notify, close } = useNovelty();
@@ -16,7 +18,6 @@ export function NoveltyControlPage() {
   const [selectedNovedad, setSelectedNovedad] = useState<Novelty | null>(null);
   const [isNotifying, setIsNotifying] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-  const [isClosed, setIsClosed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -32,29 +33,71 @@ export function NoveltyControlPage() {
       .finally(() => setIsLoading(false));
   }, []);
 
-  const handleNotify = () => {
+  const handleNotify = async () => {
     if (!selectedNovedad) return;
     setIsNotifying(true);
     toast.loading("Enviando notificaciones a cliente y remitente...");
-    setTimeout(async () => {
-      await notify({ noveltyId: selectedNovedad.id });
+    
+    try {
+      // Llamar al endpoint real del backend
+      await api.patch(
+        `/api/paquetes/${selectedNovedad.packageId}/novedades/${selectedNovedad.id}/estado`,
+        {},
+        { params: { action: "notify" } }
+      );
+      
       setIsNotifying(false);
       toast.dismiss();
-      toast.success("Notificaciones enviadas correctamente.");
-    }, 1500);
+      toast.success("✅ Notificaciones enviadas correctamente al cliente y remitente.");
+      console.log("Notificaciones enviadas exitosamente para novedad:", selectedNovedad.id);
+      
+    } catch (error) {
+      setIsNotifying(false);
+      toast.dismiss();
+      const apiError = parseApiError(error);
+      toast.error("❌ Error al enviar notificaciones", {
+        description: apiError.mensaje || "Por favor intente nuevamente.",
+      });
+      console.error("Error al notificar:", error);
+    }
   };
 
-  const handleClose = () => {
+  const handleClose = async () => {
     if (!selectedNovedad) return;
     setIsClosing(true);
     toast.loading("Cerrando novedad y exponiendo datos para Finanzas...");
-    setTimeout(async () => {
-      await close({ noveltyId: selectedNovedad.id });
+    
+    try {
+      // Llamar al endpoint real del backend
+      await api.patch(
+        `/api/paquetes/${selectedNovedad.packageId}/novedades/${selectedNovedad.id}/estado`,
+        {},
+        { params: { action: "close" } }
+      );
+      
+       setIsClosing(false);
+       toast.dismiss();
+       toast.success("✅ Novedad cerrada y lista para consulta financiera.");
+       console.log("Novedad cerrada exitosamente:", selectedNovedad.id);
+       
+       // Recargar la lista de novedades para reflejar el estado actualizado
+       findAll().then((list) => {
+         setNovelties(list);
+         if (selectedNovedad) {
+           const updated = list.find(n => n.id === selectedNovedad.id);
+           setSelectedNovedad(updated || null);
+         }
+       });
+      
+    } catch (error) {
       setIsClosing(false);
-      setIsClosed(true);
       toast.dismiss();
-      toast.success("Novedad cerrada y lista para consulta financiera.");
-    }, 2000);
+      const apiError = parseApiError(error);
+      toast.error("❌ Error al cerrar novedad", {
+        description: apiError.mensaje || "Por favor intente nuevamente.",
+      });
+      console.error("Error al cerrar:", error);
+    }
   };
 
   const handleReclassify = () => {
@@ -121,30 +164,29 @@ export function NoveltyControlPage() {
         </h1>
 
         <div className="grid gap-6 lg:grid-cols-12">
-          <aside className="lg:col-span-3">
-            <NoveltyInbox
-              novelties={novelties}
-              selectedId={activeNovedad.id}
-              onSelect={setSelectedNovedad}
-              onResetClosed={() => setIsClosed(false)}
-            />
-          </aside>
+           <aside className="lg:col-span-3">
+             <NoveltyInbox
+               novelties={novelties}
+               selectedId={activeNovedad.id}
+               onSelect={setSelectedNovedad}
+             />
+           </aside>
 
           <section className="lg:col-span-5">
             <NoveltyDetail novelty={activeNovedad} />
           </section>
 
-          <aside className="space-y-4 lg:col-span-4">
-            <ActionPanel
-              novelty={activeNovedad}
-              isClosed={isClosed}
-              isNotifying={isNotifying}
-              isClosing={isClosing}
-              onNotify={handleNotify}
-              onClose={handleClose}
-              onReclassify={handleReclassify}
-            />
-          </aside>
+           <aside className="space-y-4 lg:col-span-4">
+             <ActionPanel
+               novelty={activeNovedad}
+               isClosed={activeNovedad.status === "CLOSED"}
+               isNotifying={isNotifying}
+               isClosing={isClosing}
+               onNotify={handleNotify}
+               onClose={handleClose}
+               onReclassify={handleReclassify}
+             />
+           </aside>
         </div>
       </main>
     </AppLayout>

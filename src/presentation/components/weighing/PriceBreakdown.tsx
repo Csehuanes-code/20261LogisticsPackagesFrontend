@@ -8,6 +8,9 @@ interface PriceBreakdownViewProps {
   tipoMercancia?: MerchandiseType;
   cargaEspecial?: boolean;
   precioEnvio?: number | null;
+  tarifaBase?: number | null;
+  tarifaPorKg?: number | null;
+  tarifaPorKm?: number | null;
 }
 
 // Constantes de tarifas (deben coincidir con backend - application.yml)
@@ -25,8 +28,16 @@ export function PriceBreakdownView({
   tipoMercancia,
   cargaEspecial,
   precioEnvio,
+  tarifaBase,
+  tarifaPorKg,
+  tarifaPorKm,
 }: PriceBreakdownViewProps) {
   // Calcular desglose dinámico en tiempo real
+  // Usar tarifas de sede si están disponibles, sino usar las globales
+  const tarifa_base = tarifaBase ?? TARIFA_BASE;
+  const tarifa_por_kg = tarifaPorKg ?? TARIFA_POR_KG;
+  const tarifa_por_km = tarifaPorKm ?? TARIFA_POR_KM;
+  
   const distancia = distanciaKm ?? 0;
   
   let recargoMercancia = 0;
@@ -38,11 +49,11 @@ export function PriceBreakdownView({
 
   const recargoCategoria = cargaEspecial ? RECARGO_CARGA_ESPECIAL : 0;
 
-  const cargoPeso = billableWeight * TARIFA_POR_KG;
-  const cargoDistancia = distancia * TARIFA_POR_KM;
+  const cargoPeso = billableWeight * tarifa_por_kg;
+  const cargoDistancia = distancia * tarifa_por_km;
   
   const total =
-    TARIFA_BASE +
+    tarifa_base +
     cargoPeso +
     cargoDistancia +
     recargoMercancia +
@@ -60,18 +71,18 @@ export function PriceBreakdownView({
         </div>
 
         <div className="space-y-3 text-sm">
-          <PriceRow label="Tarifa Base (Envío Nacional)" value={`$${TARIFA_BASE.toLocaleString()}`} />
+          <PriceRow label="Tarifa Base (Envío Nacional)" value={`$${tarifa_base.toLocaleString()}`} />
           
           {billableWeight > 0 && (
             <PriceRow
-              label={`Cargo por Peso (${billableWeight.toFixed(2)} kg × $${TARIFA_POR_KG.toLocaleString()}/kg)`}
+              label={`Cargo por Peso (${billableWeight.toFixed(2)} kg × $${tarifa_por_kg.toLocaleString()}/kg)`}
               value={`$${cargoPeso.toLocaleString()}`}
             />
           )}
 
           {distancia > 0 && (
             <PriceRow
-              label={`Cargo por Distancia (${distancia.toFixed(1)} km × $${TARIFA_POR_KM}/km)`}
+              label={`Cargo por Distancia (${distancia.toFixed(1)} km × $${tarifa_por_km}/km)`}
               value={`$${cargoDistancia.toLocaleString()}`}
             />
           )}
@@ -93,7 +104,7 @@ export function PriceBreakdownView({
           )}
 
           <div className="my-3 border-t border-dashed border-border" />
-          <PriceRow label="Total (sin IVA)" value={`$${total.toLocaleString()}`} muted />
+          <PriceRow label="Total" value={`$${total.toLocaleString()}`} muted />
         </div>
 
         <div className="mt-5 rounded-xl bg-gradient-to-br from-primary to-primary-glow p-5 text-primary-foreground shadow-[var(--shadow-elevated)]">
@@ -126,18 +137,18 @@ export function PriceBreakdownView({
       </div>
 
       <div className="space-y-3 text-sm">
-        <PriceRow label="Tarifa Base (Envío Nacional)" value={`$${TARIFA_BASE.toLocaleString()}`} />
+        <PriceRow label="Tarifa Base (Envío Nacional)" value={`$${tarifa_base.toLocaleString()}`} />
         
         {billableWeight > 0 && (
           <PriceRow
-            label={`Cargo por Peso (${billableWeight.toFixed(2)} kg × $${TARIFA_POR_KG.toLocaleString()}/kg)`}
+            label={`Cargo por Peso (${billableWeight.toFixed(2)} kg × $${tarifa_por_kg.toLocaleString()}/kg)`}
             value={`$${cargoPeso.toLocaleString()}`}
           />
         )}
 
         {distancia > 0 && (
           <PriceRow
-            label={`Cargo por Distancia (${distancia.toFixed(1)} km × $${TARIFA_POR_KM}/km)`}
+            label={`Cargo por Distancia (${distancia.toFixed(1)} km × $${tarifa_por_km}/km)`}
             value={`$${cargoDistancia.toLocaleString()}`}
           />
         )}

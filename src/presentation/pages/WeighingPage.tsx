@@ -34,15 +34,20 @@ export function WeighingPage() {
     remitenteNombre,
     destinatarioNombre,
     direccionDestinoTexto,
-    distanciaKm
+    sedeNombre,
+    distanciaKm,
+    tarifaBase,
+    tarifaPorKg,
+    tarifaPorKm
   } = useAdmission();
   
-  const [merch, setMerch] = useState<MerchandiseType>(MerchandiseType.STANDARD);
-  const [pesoReal, setPesoReal] = useState(0);
-  const [volumen, setVolumen] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [precioEnvio, setPrecioEnvio] = useState<number | null>(null);
-  const [formaIrregular, setFormaIrregular] = useState(false);
+   const [merch, setMerch] = useState<MerchandiseType>(MerchandiseType.STANDARD);
+   const [pesoReal, setPesoReal] = useState(0);
+   const [volumen, setVolumen] = useState(0);
+   const [isSubmitting, setIsSubmitting] = useState(false);
+   const [precioEnvio, setPrecioEnvio] = useState<number | null>(null);
+   const [formaIrregular, setFormaIrregular] = useState(false);
+   const [pesajeConfirmado, setPesajeConfirmado] = useState(false);
   
   // FE-3: Estados para dimensiones capturadas
   const [lengthCm, setLengthCm] = useState(0);
@@ -121,12 +126,10 @@ export function WeighingPage() {
         return; // No continuar hasta que el usuario confirme
       }
 
-       // Si no hay alertas, proceder directamente
-       setPrecioEnvio(response.precioEnvio);
-       toast.success(`✅ Pesaje completado. Precio: $${response.precioEnvio}`);
-       setTimeout(() => {
-         navigate({ to: "/gestion" });
-       }, 1500);
+        // Si no hay alertas, proceder directamente
+        setPrecioEnvio(response.precioEnvio);
+        setPesajeConfirmado(true);
+        toast.success(`✅ Pesaje completado. Precio: $${response.precioEnvio}`);
      } catch (error: any) {
        let errorMsg = error.message || "Error desconocido";
        // Mejorar mensaje para errores de validación de peso
@@ -139,27 +142,25 @@ export function WeighingPage() {
      }
    };
 
-  // FE-3: Confirmar después de revisar alertas
-  const handleConfirmWithAlerts = async () => {
-    setShowAlertsDialog(false);
-    setIsSubmitting(true);
-    try {
-      // Reintentar con confirmación explícita
-      const response = await WeighingApiService.weighPackage({
-        paqueteId,
-        peso: pesoReal,
-        largoCm: lengthCm,
-        anchoCm: widthCm,
-        altoCm: heightCm,
-        tipoMercancia: merch,
-        formaIrregular: formaIrregular,
-      });
+   // FE-3: Confirmar después de revisar alertas
+   const handleConfirmWithAlerts = async () => {
+     setShowAlertsDialog(false);
+     setIsSubmitting(true);
+     try {
+       // Reintentar con confirmación explícita
+       const response = await WeighingApiService.weighPackage({
+         paqueteId,
+         peso: pesoReal,
+         largoCm: lengthCm,
+         anchoCm: widthCm,
+         altoCm: heightCm,
+         tipoMercancia: merch,
+         formaIrregular: formaIrregular,
+       });
 
-       setPrecioEnvio(response.precioEnvio);
-       toast.success(`✅ Pesaje confirmado. Precio: $${response.precioEnvio}`);
-       setTimeout(() => {
-         navigate({ to: "/gestion" });
-       }, 1500);
+        setPrecioEnvio(response.precioEnvio);
+        setPesajeConfirmado(true);
+        toast.success(`✅ Pesaje confirmado. Precio: $${response.precioEnvio}`);
      } catch (error: any) {
        let errorMsg = error.message || "Error desconocido";
        // Mejorar mensaje para errores de validación de peso
@@ -198,11 +199,12 @@ export function WeighingPage() {
 
         <div className="grid gap-6 lg:grid-cols-5">
           <div className="space-y-6 lg:col-span-3">
-            <ShipmentSummary 
-              remitenteNombre={remitenteNombre}
-              destinatarioNombre={destinatarioNombre}
-              direccionDestino={direccionDestinoTexto}
-            />
+             <ShipmentSummary 
+               remitenteNombre={remitenteNombre}
+               destinatarioNombre={destinatarioNombre}
+               direccionDestino={direccionDestinoTexto}
+               sedeNombre={sedeNombre}
+             />
             <TechnicalSpecs 
               onDimensionsChange={setVolumen} 
               onWeightChange={setPesoReal}
@@ -222,27 +224,38 @@ export function WeighingPage() {
             <MerchandiseTypeSelector value={merch} onChange={setMerch} />
           </div>
           <div className="space-y-6 lg:col-span-2">
-            <PriceBreakdownView 
-              billableWeight={pesoFacturable}
-              distanciaKm={distanciaKm}
-              tipoMercancia={merch}
-              cargaEspecial={pesoFacturable > 50 || volumen > 0.5}
-              precioEnvio={precioEnvio} 
-            />
+             <PriceBreakdownView 
+               billableWeight={pesoFacturable}
+               distanciaKm={distanciaKm}
+               tipoMercancia={merch}
+               cargaEspecial={pesoFacturable > 50 || volumen > 0.5}
+               precioEnvio={precioEnvio}
+               tarifaBase={tarifaBase}
+               tarifaPorKg={tarifaPorKg}
+               tarifaPorKm={tarifaPorKm}
+             />
             <div className="space-y-3">
-              <Button
-                size="lg"
-                className="h-14 w-full bg-gradient-to-r from-primary to-primary-glow text-base font-bold shadow-[var(--shadow-elevated)] transition-transform hover:scale-[1.01] hover:shadow-lg"
-                onClick={handleConfirm}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />
-                ) : (
-                  <ArrowRight className="mr-2 h-5 w-5" />
-                )}
-                {isSubmitting ? "Solicitando Ruta..." : "Confirmar y Solicitar Ruta"}
-              </Button>
+               <Button
+                 size="lg"
+                 className="h-14 w-full bg-gradient-to-r from-primary to-primary-glow text-base font-bold shadow-[var(--shadow-elevated)] transition-transform hover:scale-[1.01] hover:shadow-lg"
+                 onClick={() => {
+                   if (pesajeConfirmado) {
+                     navigate({ to: "/gestion" });
+                   } else {
+                     handleConfirm();
+                   }
+                 }}
+                 disabled={isSubmitting}
+               >
+                 {isSubmitting ? (
+                   <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />
+                 ) : (
+                   <ArrowRight className="mr-2 h-5 w-5" />
+                 )}
+                 {pesajeConfirmado 
+                   ? "Continuar a Gestión →"
+                   : isSubmitting ? "Solicitando Ruta..." : "Confirmar y Solicitar Ruta"}
+               </Button>
               <p className="text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Al confirmar, el paquete se bloqueará para recolección inmediata.
               </p>

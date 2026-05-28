@@ -18,7 +18,10 @@ export class NoveltyApiRepository implements NoveltyRepository {
   async findAll(): Promise<Novelty[]> {
     try {
       const response = await api.get<any[]>("/api/paquetes/novedades");
-      return response.data.map((item) => NoveltyMapper.fromHistorialItemDto(item));
+      const novelties = response.data.map((item) => NoveltyMapper.fromHistorialItemDto(item));
+      // FE-4 Fix: Poblar localCache para que findById() funcione en notify/close
+      novelties.forEach((n) => this.localCache.set(n.id, n));
+      return novelties;
     } catch (error) {
       console.error("Error al listar novedades:", error);
       throw new Error("No se pudieron cargar las novedades desde el servidor");
