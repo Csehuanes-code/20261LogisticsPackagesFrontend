@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TrackingRouteImport } from './routes/tracking'
 import { Route as ReportarNovedadRouteImport } from './routes/reportar-novedad'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as PesajeRouteImport } from './routes/pesaje'
@@ -20,6 +21,11 @@ import { Route as ClasificacionRouteImport } from './routes/clasificacion'
 import { Route as AdmisionRouteImport } from './routes/admision'
 import { Route as IndexRouteImport } from './routes/index'
 
+const TrackingRoute = TrackingRouteImport.update({
+  id: '/tracking',
+  path: '/tracking',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReportarNovedadRoute = ReportarNovedadRouteImport.update({
   id: '/reportar-novedad',
   path: '/reportar-novedad',
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/pesaje': typeof PesajeRoute
   '/register': typeof RegisterRoute
   '/reportar-novedad': typeof ReportarNovedadRoute
+  '/tracking': typeof TrackingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/pesaje': typeof PesajeRoute
   '/register': typeof RegisterRoute
   '/reportar-novedad': typeof ReportarNovedadRoute
+  '/tracking': typeof TrackingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/pesaje': typeof PesajeRoute
   '/register': typeof RegisterRoute
   '/reportar-novedad': typeof ReportarNovedadRoute
+  '/tracking': typeof TrackingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/pesaje'
     | '/register'
     | '/reportar-novedad'
+    | '/tracking'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/pesaje'
     | '/register'
     | '/reportar-novedad'
+    | '/tracking'
   id:
     | '__root__'
     | '/'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/pesaje'
     | '/register'
     | '/reportar-novedad'
+    | '/tracking'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -158,10 +170,18 @@ export interface RootRouteChildren {
   PesajeRoute: typeof PesajeRoute
   RegisterRoute: typeof RegisterRoute
   ReportarNovedadRoute: typeof ReportarNovedadRoute
+  TrackingRoute: typeof TrackingRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tracking': {
+      id: '/tracking'
+      path: '/tracking'
+      fullPath: '/tracking'
+      preLoaderRoute: typeof TrackingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reportar-novedad': {
       id: '/reportar-novedad'
       path: '/reportar-novedad'
@@ -246,6 +266,7 @@ const rootRouteChildren: RootRouteChildren = {
   PesajeRoute: PesajeRoute,
   RegisterRoute: RegisterRoute,
   ReportarNovedadRoute: ReportarNovedadRoute,
+  TrackingRoute: TrackingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

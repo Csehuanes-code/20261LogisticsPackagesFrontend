@@ -189,12 +189,12 @@ export function ClassificationPage() {
 
         {suggestion && !isLoading && (
           <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-6">
-              <PackageInfoCard
-                type="Paquete en Clasificación"
-                destination={suggestion.ciudadDestino || "Desconocida"}
-                highlight
-              />
+             <div className="space-y-6">
+               <PackageInfoCard
+                 type={suggestion.tipoMercancia || "Estándar"}
+                 destination={suggestion.ciudadDestino || "Desconocida"}
+                 highlight
+               />
               <section className="rounded-xl border border-primary/30 bg-primary/5 p-6">
                 <div className="flex items-start gap-4">
                   <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-glow text-primary-foreground">

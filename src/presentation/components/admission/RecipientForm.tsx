@@ -1,4 +1,5 @@
 import { MapPin, Building2 } from "lucide-react";
+import { useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -7,16 +8,67 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Controller, Control } from "react-hook-form";
+import { Controller, Control, UseFormSetValue } from "react-hook-form";
 import { FormCard } from "../shared/FormCard";
 import { Field } from "../shared/Field";
 import { DocumentType, DocumentTypeLabel } from "@/domain/enums/document-type.enum";
 
+// Ciudades y departamentos con cobertura en el sistema
+const CIUDADES_COBERTURA = [
+  { ciudad: "Bogotá", departamento: "Cundinamarca" },
+  { ciudad: "Medellín", departamento: "Antioquia" },
+  { ciudad: "Cali", departamento: "Valle del Cauca" },
+  { ciudad: "Barranquilla", departamento: "Atlántico" },
+  { ciudad: "Cartagena", departamento: "Bolívar" },
+  { ciudad: "Bucaramanga", departamento: "Santander" },
+  { ciudad: "Pereira", departamento: "Risaralda" },
+  { ciudad: "Manizales", departamento: "Caldas" },
+  { ciudad: "Cúcuta", departamento: "Norte de Santander" },
+  { ciudad: "Ibagué", departamento: "Tolima" },
+  { ciudad: "Riohacha", departamento: "La Guajira" },
+];
+
 interface RecipientFormProps {
   control: Control<any>;
+  setValue: UseFormSetValue<any>;
 }
 
-export function RecipientForm({ control }: RecipientFormProps) {
+// Componente interno para Select de ciudades con autocompletado de departamento
+function CiudadSelect({ 
+  value, 
+  onChange, 
+  setValue
+}: { 
+  value: string; 
+  onChange: (val: string) => void; 
+  setValue: UseFormSetValue<any>;
+}) {
+  const handleCiudadChange = (ciudad: string) => {
+    onChange(ciudad);
+    // Encontrar el departamento correspondiente y actualizarlo
+    const ciudadData = CIUDADES_COBERTURA.find(c => c.ciudad === ciudad);
+    if (ciudadData) {
+      setValue("direccionDestino.departamento", ciudadData.departamento);
+    }
+  };
+
+  return (
+    <Select value={value} onValueChange={handleCiudadChange}>
+      <SelectTrigger>
+        <SelectValue placeholder="Selecciona una ciudad" />
+      </SelectTrigger>
+      <SelectContent>
+        {CIUDADES_COBERTURA.map((c) => (
+          <SelectItem key={c.ciudad} value={c.ciudad}>
+            {c.ciudad}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+export function RecipientForm({ control, setValue }: RecipientFormProps) {
   return (
     <FormCard
       icon={<MapPin className="h-4 w-4" />}
@@ -107,7 +159,11 @@ export function RecipientForm({ control }: RecipientFormProps) {
             control={control}
             defaultValue=""
             render={({ field }) => (
-              <Input placeholder="Ej: Bogotá" {...field} />
+              <CiudadSelect
+                value={field.value}
+                onChange={field.onChange}
+                setValue={setValue}
+              />
             )}
           />
         </Field>
@@ -117,7 +173,12 @@ export function RecipientForm({ control }: RecipientFormProps) {
             control={control}
             defaultValue=""
             render={({ field }) => (
-              <Input placeholder="Ej: Cundinamarca" {...field} />
+              <Input 
+                placeholder="Se completa automáticamente" 
+                {...field}
+                disabled
+                className="bg-muted cursor-not-allowed"
+              />
             )}
           />
         </Field>

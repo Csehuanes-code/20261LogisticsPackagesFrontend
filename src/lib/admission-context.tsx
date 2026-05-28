@@ -17,21 +17,29 @@ interface AdmissionContextType {
   estadoGps: "PENDIENTE" | "RESUELTO" | null;
   estado: string | null;
   sedeId: string | null;
+  sedeNombre: string | null;
   zonaId: string | null;
   remitenteNombre: string | null;
   destinatarioNombre: string | null;
   direccionDestinoTexto: string | null;
   distanciaKm: number | null;
+  tarifaBase: number | null;
+  tarifaPorKg: number | null;
+  tarifaPorKm: number | null;
   setPaqueteId: (id: string) => void;
   setEtiquetaDigital: (etiqueta: string) => void;
   setEstadoGps: (estado: "PENDIENTE" | "RESUELTO") => void;
   setEstado: (estado: string) => void;
   setSedeId: (id: string) => void;
+  setSedeNombre: (nombre: string) => void;
   setZonaId: (id: string) => void;
   setRemitenteNombre: (nombre: string) => void;
   setDestinatarioNombre: (nombre: string) => void;
   setDireccionDestinoTexto: (direccion: string) => void;
   setDistanciaKm: (distancia: number) => void;
+  setTarifaBase: (tarifa: number | null) => void;
+  setTarifaPorKg: (tarifa: number | null) => void;
+  setTarifaPorKm: (tarifa: number | null) => void;
   clearAdmission: () => void;
 }
 
@@ -47,11 +55,15 @@ export function AdmissionProvider({ children }: { children: ReactNode }) {
   );
   const [estado, setEstado] = useState<string | null>(null);
   const [sedeId, setSedeId] = useState<string | null>(null);
+  const [sedeNombre, setSedeNombre] = useState<string | null>(null);
   const [zonaId, setZonaId] = useState<string | null>(null);
   const [remitenteNombre, setRemitenteNombre] = useState<string | null>(null);
   const [destinatarioNombre, setDestinatarioNombre] = useState<string | null>(null);
   const [direccionDestinoTexto, setDireccionDestinoTexto] = useState<string | null>(null);
   const [distanciaKm, setDistanciaKm] = useState<number | null>(null);
+  const [tarifaBase, setTarifaBase] = useState<number | null>(null);
+  const [tarifaPorKg, setTarifaPorKg] = useState<number | null>(null);
+  const [tarifaPorKm, setTarifaPorKm] = useState<number | null>(null);
 
   const clearAdmission = () => {
     setPaqueteId(null);
@@ -59,11 +71,15 @@ export function AdmissionProvider({ children }: { children: ReactNode }) {
     setEstadoGps(null);
     setEstado(null);
     setSedeId(null);
+    setSedeNombre(null);
     setZonaId(null);
     setRemitenteNombre(null);
     setDestinatarioNombre(null);
     setDireccionDestinoTexto(null);
     setDistanciaKm(null);
+    setTarifaBase(null);
+    setTarifaPorKg(null);
+    setTarifaPorKm(null);
   };
 
   return (
@@ -74,21 +90,29 @@ export function AdmissionProvider({ children }: { children: ReactNode }) {
         estadoGps,
         estado,
         sedeId,
+        sedeNombre,
         zonaId,
         remitenteNombre,
         destinatarioNombre,
         direccionDestinoTexto,
         distanciaKm,
+        tarifaBase,
+        tarifaPorKg,
+        tarifaPorKm,
         setPaqueteId,
         setEtiquetaDigital,
         setEstadoGps,
         setEstado,
         setSedeId,
+        setSedeNombre,
         setZonaId,
         setRemitenteNombre,
         setDestinatarioNombre,
         setDireccionDestinoTexto,
         setDistanciaKm,
+        setTarifaBase,
+        setTarifaPorKg,
+        setTarifaPorKm,
         clearAdmission,
       }}
     >

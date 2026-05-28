@@ -32,10 +32,14 @@ export function AdmissionPage() {
     setEstadoGps, 
     setEstado,
     setSedeId,
+    setSedeNombre,
     setRemitenteNombre,
     setDestinatarioNombre,
     setDireccionDestinoTexto,
     setDistanciaKm,
+    setTarifaBase,
+    setTarifaPorKg,
+    setTarifaPorKm,
     estadoGps, 
     paqueteId 
   } = useAdmission();
@@ -62,9 +66,9 @@ export function AdmissionPage() {
   }, []);
 
   // FE-2: Configurar formulario con react-hook-form
-  const { handleSubmit, control, register } = useForm({
+  const { handleSubmit, control, register, setValue } = useForm({
     defaultValues: {
-      sedeId: selectedSedeId || "550e8400-e29b-41d4-a716-446655440001", // FT-1: Dinámico o fallback
+      sedeId: "", // FE-4: Será actualizado por setValue cuando el usuario seleccione una sede
       remitente: {
         tipoDocumento: DocumentType.CEDULA_CIUDADANIA,
         numeroDocumento: "",
@@ -167,9 +171,21 @@ export function AdmissionPage() {
                     </span>
                     <h2 className="text-sm font-bold text-foreground">Sede de Origen</h2>
                   </div>
-                  <Select value={selectedSedeId} onValueChange={setSelectedSedeId}>
+                   <Select value={selectedSedeId} onValueChange={(sedeId) => {
+                      setSelectedSedeId(sedeId);
+                      // Actualizar el valor en el formulario react-hook-form
+                      setValue("sedeId", sedeId);
+                      // Guardar tarifas de la sede seleccionada en el contexto
+                      const sedeSeleccionada = sedes.find(s => s.id === sedeId);
+                      if (sedeSeleccionada) {
+                        setSedeNombre(sedeSeleccionada.nombre);
+                        setTarifaBase(sedeSeleccionada.tarifaBase);
+                        setTarifaPorKg(sedeSeleccionada.tarifaPorKg);
+                        setTarifaPorKm(sedeSeleccionada.tarifaPorKm);
+                      }
+                    }}>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Seleccione una sede" />
+                    <SelectValue placeholder="Seleccione una sede" />
                     </SelectTrigger>
                     <SelectContent>
                       {sedes.map((sede) => (
@@ -179,15 +195,10 @@ export function AdmissionPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <input
-                    type="hidden"
-                    {...register("sedeId")}
-                    value={selectedSedeId}
-                  />
                 </section>
               )}
               <SenderForm control={control as any} />
-              <RecipientForm control={control as any} />
+              <RecipientForm control={control as any} setValue={setValue as any} />
             </div>
             <div className="space-y-6 lg:col-span-2">
               {/* FE-5: Pasar props reales de GPS al CoverageMap (contingencia GPS) */}
@@ -197,6 +208,10 @@ export function AdmissionPage() {
                 onCoordinatesUpdate={(lat, lon) => {
                   // Callback: Cuando se actualizan las coordenadas manualmente
                   setEstadoGps("RESUELTO");
+                  // Navegar automáticamente a pesaje tras resolver GPS manualmente
+                  setTimeout(() => {
+                    navigate({ to: "/pesaje" });
+                  }, 1500);
                 }}
               />
               <ShippingInfoSection control={control as any} />

@@ -22,7 +22,7 @@ export function NoveltyDetail({ novelty }: NoveltyDetailProps) {
   return (
     <div className="rounded-xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-bold text-foreground">Detalles del Paquete #{novelty.id}</h2>
+        <h2 className="text-lg font-bold text-foreground">Detalles del Paquete #{novelty.packageId}</h2>
         <span
           className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${
             novelty.priority === "high"
@@ -37,9 +37,9 @@ export function NoveltyDetail({ novelty }: NoveltyDetailProps) {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <Cell label="Cliente" value="TecnoCorp S.A." />
-        <Cell label="Ruta" value="R-450 (CABA)" />
-        <Cell label="Destino" value="N/A" />
+        <Cell label="Tipo de Novedad" value={novelty.type} />
+        <Cell label="Origen" value={novelty.origin} />
+        <Cell label="Reportado Por" value={novelty.reportedBy.slice(0, 8)} />
       </div>
 
       {novelty.description && (
