@@ -7,16 +7,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Controller, Control } from "react-hook-form";
+import type { Control, FieldErrors } from "react-hook-form";
+import { Controller } from "react-hook-form";
 import { FormCard } from "../shared/FormCard";
 import { Field } from "../shared/Field";
 import { PaymentMethod, PaymentMethodLabel } from "@/domain/enums/payment-method.enum";
 
 interface ShippingInfoSectionProps {
   control: Control<any>;
+  errors?: FieldErrors<any>;
+  touched?: any;
 }
 
-export function ShippingInfoSection({ control }: ShippingInfoSectionProps) {
+export function ShippingInfoSection({
+  control,
+  errors,
+  touched,
+}: ShippingInfoSectionProps) {
   return (
     <FormCard
       icon={<Truck className="h-4 w-4" />}
@@ -30,6 +37,13 @@ export function ShippingInfoSection({ control }: ShippingInfoSectionProps) {
             Obligatorio
           </span>
         }
+        error={
+          touched?.valorDeclarado
+            ? typeof errors?.valorDeclarado?.message === "string"
+              ? errors.valorDeclarado.message
+              : undefined
+            : undefined
+        }
       >
         <div className="relative">
           <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
@@ -38,30 +52,49 @@ export function ShippingInfoSection({ control }: ShippingInfoSectionProps) {
           <Controller
             name="valorDeclarado"
             control={control}
-            defaultValue={0}
+            defaultValue={1000}
             render={({ field }) => (
-               <Input 
-                 className="pl-7" 
-                 placeholder="0.00"
-                 type="number"
-                 {...field}
-                 onChange={(e) => {
-                   const value = e.target.valueAsNumber;
-                   field.onChange(isNaN(value) ? 0 : value);
-                 }}
-               />
+              <Input
+                className={`pl-7 ${
+                  touched?.valorDeclarado && errors?.valorDeclarado
+                    ? "border-destructive"
+                    : ""
+                }`}
+                placeholder="1000"
+                type="number"
+                {...field}
+                onChange={(e) => {
+                  const value = e.target.valueAsNumber;
+                  field.onChange(isNaN(value) ? 0 : value);
+                }}
+              />
             )}
           />
         </div>
       </Field>
-      <Field label="Método de Pago">
+      <Field
+        label="Método de Pago"
+        error={
+          touched?.metodoPago
+            ? typeof errors?.metodoPago?.message === "string"
+              ? errors.metodoPago.message
+              : undefined
+            : undefined
+        }
+      >
         <Controller
           name="metodoPago"
           control={control}
           defaultValue={PaymentMethod.PREPAGO}
           render={({ field }) => (
             <Select value={field.value} onValueChange={field.onChange}>
-              <SelectTrigger>
+              <SelectTrigger
+                className={
+                  touched?.metodoPago && errors?.metodoPago
+                    ? "border-destructive"
+                    : ""
+                }
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
