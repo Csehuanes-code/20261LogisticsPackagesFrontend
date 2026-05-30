@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Package, AlertTriangle, ArrowRight, LoaderCircle, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
@@ -42,12 +42,13 @@ export function WeighingPage() {
   } = useAdmission();
   
    const [merch, setMerch] = useState<MerchandiseType>(MerchandiseType.STANDARD);
-   const [pesoReal, setPesoReal] = useState(0);
-   const [volumen, setVolumen] = useState(0);
-   const [isSubmitting, setIsSubmitting] = useState(false);
-   const [precioEnvio, setPrecioEnvio] = useState<number | null>(null);
-   const [formaIrregular, setFormaIrregular] = useState(false);
-   const [pesajeConfirmado, setPesajeConfirmado] = useState(false);
+    const [pesoReal, setPesoReal] = useState(0);
+    const [volumen, setVolumen] = useState(0);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [precioEnvio, setPrecioEnvio] = useState<number | null>(null);
+    const [formaIrregular, setFormaIrregular] = useState(false);
+    const [pesajeConfirmado, setPesajeConfirmado] = useState(false);
+    const [isValidTechnicalSpecs, setIsValidTechnicalSpecs] = useState(false);
   
   // FE-3: Estados para dimensiones capturadas
   const [lengthCm, setLengthCm] = useState(0);
@@ -92,6 +93,17 @@ export function WeighingPage() {
       setShowAtypicalDensityAlert(false);
     }
   }, [pesoReal, pesoVolumetrico]);
+
+   // Estabilizar referencias de callbacks para evitar re-renders innecesarios en TechnicalSpecs
+   const handleDimensionsRaw = useCallback((length: number, width: number, height: number) => {
+     setLengthCm(length);
+     setWidthCm(width);
+     setHeightCm(height);
+   }, []);
+
+   const handleValidityChange = useCallback((valid: boolean) => {
+     setIsValidTechnicalSpecs(valid);
+   }, []);
 
    // FE-3: Implementar llamada real al backend
    const handleConfirm = async () => {
@@ -189,12 +201,12 @@ export function WeighingPage() {
              UUID: <span className="font-mono">{paqueteId}</span>
            </p>
           </div>
-          {pesoFacturable > 50 && (
-            <div className="flex items-center gap-2 rounded-full border border-warning/40 bg-warning/10 px-4 py-2 text-sm font-semibold text-foreground">
-              <AlertTriangle className="h-4 w-4 text-warning" />
-              Carga Especial (&gt;50kg)
-            </div>
-          )}
+           {((pesoFacturable > 50 && pesoFacturable <= 70) || (volumen > 0.5 && volumen <= 0.7)) && (
+             <div className="flex items-center gap-2 rounded-full border border-warning/40 bg-warning/10 px-4 py-2 text-sm font-semibold text-foreground">
+               <AlertTriangle className="h-4 w-4 text-warning" />
+               Carga Especial
+             </div>
+           )}
         </div>
 
         <div className="grid gap-6 lg:grid-cols-5">
@@ -205,16 +217,13 @@ export function WeighingPage() {
                direccionDestino={direccionDestinoTexto}
                sedeNombre={sedeNombre}
              />
-            <TechnicalSpecs 
-              onDimensionsChange={setVolumen} 
-              onWeightChange={setPesoReal}
-              onIrregularChange={setFormaIrregular}
-              onDimensionsRaw={(length, width, height) => {
-                setLengthCm(length);
-                setWidthCm(width);
-                setHeightCm(height);
-              }}
-            />
+             <TechnicalSpecs 
+               onDimensionsChange={setVolumen} 
+               onWeightChange={setPesoReal}
+               onIrregularChange={setFormaIrregular}
+               onDimensionsRaw={handleDimensionsRaw}
+               onValidityChange={handleValidityChange}
+             />
             <MetricsDisplay
               volumeM3={volumen}
               volumetricWeight={pesoVolumetrico}
@@ -224,42 +233,48 @@ export function WeighingPage() {
             <MerchandiseTypeSelector value={merch} onChange={setMerch} />
           </div>
           <div className="space-y-6 lg:col-span-2">
-             <PriceBreakdownView 
-               billableWeight={pesoFacturable}
-               distanciaKm={distanciaKm}
-               tipoMercancia={merch}
-               cargaEspecial={pesoFacturable > 50 || volumen > 0.5}
-               precioEnvio={precioEnvio}
-               tarifaBase={tarifaBase}
-               tarifaPorKg={tarifaPorKg}
-               tarifaPorKm={tarifaPorKm}
-             />
-            <div className="space-y-3">
-               <Button
-                 size="lg"
-                 className="h-14 w-full bg-gradient-to-r from-primary to-primary-glow text-base font-bold shadow-[var(--shadow-elevated)] transition-transform hover:scale-[1.01] hover:shadow-lg"
-                 onClick={() => {
-                   if (pesajeConfirmado) {
-                     navigate({ to: "/gestion" });
-                   } else {
-                     handleConfirm();
-                   }
-                 }}
-                 disabled={isSubmitting}
-               >
-                 {isSubmitting ? (
-                   <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />
-                 ) : (
-                   <ArrowRight className="mr-2 h-5 w-5" />
+              <PriceBreakdownView 
+                billableWeight={pesoFacturable}
+                distanciaKm={distanciaKm}
+                tipoMercancia={merch}
+                cargaEspecial={(pesoFacturable > 50 && pesoFacturable <= 70) || (volumen > 0.5 && volumen <= 0.7)}
+                precioEnvio={precioEnvio}
+                tarifaBase={tarifaBase}
+                tarifaPorKg={tarifaPorKg}
+                tarifaPorKm={tarifaPorKm}
+              />
+             <div className="space-y-3">
+                 {!pesajeConfirmado && (
+                   <>
+                     <Button
+                       size="lg"
+                       className="h-14 w-full bg-gradient-to-r from-primary to-primary-glow text-base font-bold shadow-[var(--shadow-elevated)] transition-transform hover:scale-[1.01] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                       onClick={handleConfirm}
+                       disabled={isSubmitting || !isValidTechnicalSpecs || showAtypicalDensityAlert}
+                     >
+                       {isSubmitting ? (
+                         <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />
+                       ) : (
+                         <ArrowRight className="mr-2 h-5 w-5" />
+                       )}
+                       {isSubmitting ? "Solicitando Ruta..." : "Confirmar y Solicitar Ruta"}
+                     </Button>
+                     <p className="text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                       Al confirmar, el paquete se bloqueará para recolección inmediata.
+                     </p>
+                   </>
                  )}
-                 {pesajeConfirmado 
-                   ? "Continuar a Gestión →"
-                   : isSubmitting ? "Solicitando Ruta..." : "Confirmar y Solicitar Ruta"}
-               </Button>
-              <p className="text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Al confirmar, el paquete se bloqueará para recolección inmediata.
-              </p>
-            </div>
+                 {pesajeConfirmado && (
+                   <Button
+                     size="lg"
+                     className="h-14 w-full bg-gradient-to-r from-primary to-primary-glow text-base font-bold shadow-[var(--shadow-elevated)] transition-transform hover:scale-[1.01] hover:shadow-lg"
+                     onClick={() => navigate({ to: "/gestion" })}
+                   >
+                     <ArrowRight className="mr-2 h-5 w-5" />
+                     Continuar a Gestión
+                   </Button>
+                 )}
+             </div>
           </div>
         </div>
       </main>
