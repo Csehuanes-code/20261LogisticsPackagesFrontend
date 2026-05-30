@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Package, Truck, Info, Loader2 } from "lucide-react";
+import { Package, Truck, Info, Loader2, AlertCircle } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -23,6 +24,7 @@ import { AdmisionApiService } from "@/infrastructure/http/admission-api.service"
 import { SedesApiService, SedeDTO } from "@/infrastructure/http/sedes-api.service";
 import { DocumentType } from "@/domain/enums/document-type.enum";
 import { PaymentMethod } from "@/domain/enums/payment-method.enum";
+import { admissionSchema } from "@/domain/validators/admission.validator";
 
 export function AdmissionPage() {
   const navigate = useNavigate();
@@ -65,33 +67,35 @@ export function AdmissionPage() {
     cargarSedes();
   }, []);
 
-  // FE-2: Configurar formulario con react-hook-form
-  const { handleSubmit, control, register, setValue } = useForm({
-    defaultValues: {
-      sedeId: "", // FE-4: Será actualizado por setValue cuando el usuario seleccione una sede
-      remitente: {
-        tipoDocumento: DocumentType.CEDULA_CIUDADANIA,
-        numeroDocumento: "",
-        nombreCompleto: "",
-        telefono: "",
-      },
-      destinatario: {
-        tipoDocumento: DocumentType.CEDULA_CIUDADANIA,
-        numeroDocumento: "",
-        nombreCompleto: "",
-        telefono: "",
-        correoElectronico: "",
-      },
-      direccionDestino: {
-        direccion: "",
-        ciudad: "",
-        departamento: "",
-        pais: "COLOMBIA",
-      },
-      valorDeclarado: 0,
-      metodoPago: PaymentMethod.PREPAGO,
-    },
-  });
+   // FE-2: Configurar formulario con react-hook-form y validaciones Zod
+   const { handleSubmit, control, register, setValue, trigger, formState: { errors, touchedFields } } = useForm({
+     resolver: zodResolver(admissionSchema),
+     mode: "onBlur",
+     defaultValues: {
+       sedeId: "", // FE-4: Será actualizado por setValue cuando el usuario seleccione una sede
+       remitente: {
+         tipoDocumento: DocumentType.CEDULA_CIUDADANIA,
+         numeroDocumento: "",
+         nombreCompleto: "",
+         telefono: "",
+       },
+       destinatario: {
+         tipoDocumento: DocumentType.CEDULA_CIUDADANIA,
+         numeroDocumento: "",
+         nombreCompleto: "",
+         telefono: "",
+         correoElectronico: "",
+       },
+       direccionDestino: {
+         direccion: "",
+         ciudad: "",
+         departamento: "",
+         pais: "COLOMBIA",
+       },
+       valorDeclarado: 1000,
+       metodoPago: PaymentMethod.PREPAGO,
+     },
+   });
 
   const onSubmit = async (data: any) => {
     setIsSubmitting(true);
@@ -162,43 +166,51 @@ export function AdmissionPage() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid gap-6 lg:grid-cols-5">
             <div className="space-y-6 lg:col-span-3">
-              {/* FT-1: Selector de Sedes */}
-              {!loadingSedes && sedes.length > 0 && (
-                <section className="rounded-xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
-                  <div className="mb-5 flex items-center gap-2.5">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary">
-                      📍
-                    </span>
-                    <h2 className="text-sm font-bold text-foreground">Sede de Origen</h2>
-                  </div>
-                   <Select value={selectedSedeId} onValueChange={(sedeId) => {
-                      setSelectedSedeId(sedeId);
-                      // Actualizar el valor en el formulario react-hook-form
-                      setValue("sedeId", sedeId);
-                      // Guardar tarifas de la sede seleccionada en el contexto
-                      const sedeSeleccionada = sedes.find(s => s.id === sedeId);
-                      if (sedeSeleccionada) {
-                        setSedeNombre(sedeSeleccionada.nombre);
-                        setTarifaBase(sedeSeleccionada.tarifaBase);
-                        setTarifaPorKg(sedeSeleccionada.tarifaPorKg);
-                        setTarifaPorKm(sedeSeleccionada.tarifaPorKm);
-                      }
-                    }}>
-                    <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Seleccione una sede" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {sedes.map((sede) => (
-                        <SelectItem key={sede.id} value={sede.id}>
-                          {sede.nombre} {sede.ciudad && `(${sede.ciudad})`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </section>
-              )}
-              <SenderForm control={control as any} />
-              <RecipientForm control={control as any} setValue={setValue as any} />
+               {/* FT-1: Selector de Sedes */}
+               {!loadingSedes && sedes.length > 0 && (
+                 <section className="rounded-xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+                   <div className="mb-5 flex items-center gap-2.5">
+                     <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary">
+                       📍
+                     </span>
+                     <h2 className={`text-sm font-bold ${errors.sedeId ? "text-destructive" : "text-foreground"}`}>Sede de Origen</h2>
+                   </div>
+                    <Select value={selectedSedeId} onValueChange={(sedeId) => {
+                       setSelectedSedeId(sedeId);
+                       // Actualizar el valor en el formulario react-hook-form
+                       setValue("sedeId", sedeId);
+                       // Validar el campo para limpiar el error inmediatamente
+                       trigger("sedeId");
+                       // Guardar tarifas de la sede seleccionada en el contexto
+                       const sedeSeleccionada = sedes.find(s => s.id === sedeId);
+                       if (sedeSeleccionada) {
+                         setSedeNombre(sedeSeleccionada.nombre);
+                         setTarifaBase(sedeSeleccionada.tarifaBase);
+                         setTarifaPorKg(sedeSeleccionada.tarifaPorKg);
+                         setTarifaPorKm(sedeSeleccionada.tarifaPorKm);
+                       }
+                     }}>
+                     <SelectTrigger className={`w-full ${errors.sedeId ? "border-destructive" : ""}`}>
+                     <SelectValue placeholder="Seleccione una sede" />
+                     </SelectTrigger>
+                     <SelectContent>
+                       {sedes.map((sede) => (
+                         <SelectItem key={sede.id} value={sede.id}>
+                           {sede.nombre} {sede.ciudad && `(${sede.ciudad})`}
+                         </SelectItem>
+                       ))}
+                     </SelectContent>
+                   </Select>
+                   {errors.sedeId && (
+                     <p className="mt-2 text-xs text-destructive font-medium flex items-center gap-1.5">
+                       <AlertCircle className="h-3.5 w-3.5" />
+                       {errors.sedeId.message}
+                     </p>
+                   )}
+                 </section>
+               )}
+                <SenderForm control={control} errors={errors as any} touched={touchedFields as any} />
+                <RecipientForm control={control} setValue={setValue} errors={errors as any} touched={touchedFields as any} />
             </div>
             <div className="space-y-6 lg:col-span-2">
               {/* FE-5: Pasar props reales de GPS al CoverageMap (contingencia GPS) */}
@@ -214,7 +226,7 @@ export function AdmissionPage() {
                   }, 1500);
                 }}
               />
-              <ShippingInfoSection control={control as any} />
+              <ShippingInfoSection control={control} errors={errors as any} touched={touchedFields as any} />
               <div className="space-y-3">
                 <Button
                   type="submit"
